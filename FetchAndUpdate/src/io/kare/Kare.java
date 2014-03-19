@@ -1,5 +1,8 @@
 package io.kare;
 
+import com.mongodb.DB;
+
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -14,13 +17,18 @@ public class Kare {
         this.fetcher = new Fetcher(System.getProperty("api-key"));
     }
 
-    public void update() {
+    public void update(DB from,  DB to) throws IOException {
         updateRepoList();
+
         List<String> pendingUpdates = identifyOutDatedRepos();
+
+
 
         for (String repo : pendingUpdates) {
             updateStarsFor(repo);
         }
+
+        updateCorrelations();
     }
 
     private void updateRepoList() {
@@ -34,6 +42,10 @@ public class Kare {
     }
 
     private void updateStarsFor(String repo) {
+        // todo
+    }
+
+    private void updateCorrelations() {
         // todo
     }
 }
