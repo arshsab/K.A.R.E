@@ -15,6 +15,8 @@ public class Main {
     public static void main(String... args) throws IOException, InterruptedException {
         System.getProperties().load(new FileInputStream(args[0]));
 
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+
         MongoClient client = new MongoClient(System.getProperty("mongo.host"),
                 Integer.parseInt(System.getProperty("mongo.port")));
 

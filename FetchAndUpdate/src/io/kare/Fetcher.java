@@ -52,7 +52,7 @@ public class Fetcher {
                 throw new FileNotFoundException();
             } else if (ioe.getMessage().contains("500")) {
                 error.getAndSet(true);
-                throw new RuntimeException(ioe);
+                throw ioe;
             } else if (ioe.getMessage().contains("403")) {
                 while (!(isSearch ? isSearchReady() : isNormalReady())) {
                     try {
@@ -64,7 +64,7 @@ public class Fetcher {
 
                 ret = fetch(url);
             } else {
-                throw new RuntimeException(ioe);
+                throw ioe;
             }
         }
 
@@ -97,7 +97,7 @@ public class Fetcher {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit&" + access);
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + access);
 
         JsonNode node = mapper.readTree(rateLimit);
 
@@ -113,7 +113,7 @@ public class Fetcher {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit&" + access);
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + access);
 
         JsonNode node = mapper.readTree(rateLimit);
 

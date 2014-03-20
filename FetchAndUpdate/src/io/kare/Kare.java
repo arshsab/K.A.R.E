@@ -1,6 +1,9 @@
 package io.kare;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,27 +15,22 @@ import java.util.List;
 
 public class Kare {
     private final Fetcher fetcher;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     Kare() {
         this.fetcher = new Fetcher(System.getProperty("api-key"));
     }
 
     public void update(DB from,  DB to) throws IOException {
-        updateRepoList();
+        new RepoUpdateAlgorithm(fetcher).update(to);
 
         List<String> pendingUpdates = identifyOutDatedRepos();
-
-
 
         for (String repo : pendingUpdates) {
             updateStarsFor(repo);
         }
 
         updateCorrelations();
-    }
-
-    private void updateRepoList() {
-        // todo
     }
 
     private List<String> identifyOutDatedRepos() {
