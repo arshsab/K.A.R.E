@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 public class Kare {
     private final Fetcher fetcher;
-    private final ObjectMapper mapper = new ObjectMapper();
 
     Kare() {
         this.fetcher = new Fetcher(System.getProperty("api-key"));
@@ -60,6 +59,10 @@ public class Kare {
         }
 
         Logger.important("Finished loading in all the new stars.");
+
+        Logger.important("Loading in all the old stars.");
+        new CopyOverStarsAlgorithm().copy(from, to);
+        Logger.important("Finished loading in all the old stars.");
 
         Logger.important("Starting the Correlations algorithm.");
         new CorrelationsAlgorithm(to).correlate();
