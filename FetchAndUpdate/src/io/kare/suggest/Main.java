@@ -1,4 +1,4 @@
-package io.kare;
+package io.kare.suggest;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;

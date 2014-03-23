@@ -1,4 +1,4 @@
-package io.kare;
+package io.kare.suggest;
 
 /**
  * @author arshsab

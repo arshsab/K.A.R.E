@@ -1,10 +1,12 @@
-package io.kare;
+package io.kare.suggest.repos;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import io.kare.suggest.Logger;
+import io.kare.suggest.fetch.Fetcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +29,6 @@ public class RepoUpdateAlgorithm {
         DBCollection repos = db.getCollection("repos");
         repos.createIndex(new BasicDBObject("name", 1), new BasicDBObject("unique", true));
         repos.createIndex(new BasicDBObject("stargazers", 1));
-
 
         int stars = Integer.parseInt(System.getProperty("star-threshold"));
 

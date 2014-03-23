@@ -1,11 +1,9 @@
-package io.kare;
+package io.kare.suggest.fetch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -148,17 +146,5 @@ public class Fetcher {
         }
     }
 
-    private class Http {
-        public String get(String url) throws IOException {
-            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String data = br.lines()
-                    .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-                    .toString();
-
-            return data;
-        }
-    }
 }

@@ -1,12 +1,16 @@
-package io.kare;
+package io.kare.suggest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import io.kare.suggest.fetch.Fetcher;
+import io.kare.suggest.repos.OutOfDateRepoIdentificationAlgorithm;
+import io.kare.suggest.repos.RepoUpdateAlgorithm;
+import io.kare.suggest.stars.CopyOverStarsAlgorithm;
+import io.kare.suggest.stars.CorrelationsAlgorithm;
+import io.kare.suggest.stars.UpdateStarsRunnable;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

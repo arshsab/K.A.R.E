@@ -1,4 +1,4 @@
-package io.kare;
+package io.kare.suggest.repos;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
