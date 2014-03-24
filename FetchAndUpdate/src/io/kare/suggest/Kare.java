@@ -25,7 +25,7 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
-        this.fetcher = new Fetcher(System.getProperty("api-key"));
+        this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
     }
 
     public void update(DB from,  DB to) throws IOException {

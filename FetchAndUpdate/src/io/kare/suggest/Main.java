@@ -25,7 +25,17 @@ public class Main {
         DB one = client.getDB(System.getProperty("db.one"));
         DB two = client.getDB(System.getProperty("db.two"));
 
-        while (!Thread.interrupted()) {
+        String _runs = System.getProperty("kare.runs");
+
+        int runs;
+        if (_runs == null) {
+            runs = Integer.MAX_VALUE;
+        } else {
+            runs = Integer.parseInt(_runs);
+        }
+
+        int i = 0;
+        while (!Thread.interrupted() && i++ < runs) {
             Logger.important("Starting an update.");
             kare.update(one, two);
             Logger.important("Completed an update. Sleeping for 1 / 2 hour before next update.");
