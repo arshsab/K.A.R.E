@@ -54,13 +54,14 @@ public class RepoUpdateAlgorithm {
 
             for (JsonNode node : newRepos) {
                 BasicDBObject repo = new BasicDBObject()
-                        .append("name"       , node.path("full_name").textValue())
-                        .append("owner"      , node.path("owner").path("login").textValue())
-                        .append("description", node.path("description").textValue())
-                        .append("gazers"     , node.path("stargazers_count").intValue())
-                        .append("language"   , node.path("language").textValue())
-                        .append("watchers"   , node.path("watchers_count").intValue()
-                );
+                        .append("name"          , node.path("full_name").textValue())
+                        .append("owner"         , node.path("owner").path("login").textValue())
+                        .append("description"   , node.path("description").textValue())
+                        .append("gazers"        , node.path("stargazers_count").intValue())
+                        .append("language"      , node.path("language").textValue())
+                        .append("watchers"      , node.path("watchers_count").intValue())
+                        .append("default_branch", node.path("default_branch").textValue())
+                ;
 
                 Logger.info("Inserting Repo: " + repo.toString());
 

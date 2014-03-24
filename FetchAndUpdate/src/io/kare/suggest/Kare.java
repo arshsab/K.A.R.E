@@ -25,10 +25,14 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
-        this.fetcher = new Fetcher(System.getProperty("api-key"));
+        this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
     }
 
     public void update(DB from,  DB to) throws IOException {
+        to.createCollection("repos", null);
+        to.createCollection("stars", null);
+        to.createCollection("correlations", null);
+
         Logger.important("Starting a search for all repos.");
         new RepoUpdateAlgorithm(fetcher).update(to);
         Logger.important("Finished a search for all repos.");

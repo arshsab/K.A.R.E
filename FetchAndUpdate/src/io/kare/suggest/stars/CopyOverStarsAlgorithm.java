@@ -23,10 +23,7 @@ public class CopyOverStarsAlgorithm {
             .append("unique", true)
         );
 
-        DBCursor cursor = fromStars.find();
-        while (cursor.hasNext()) {
-            toStars.insert(cursor.next());
-        }
+        fromStars.find().forEach(toStars::insert);
 
         toStars.ensureIndex(new BasicDBObject("gazer", 1));
         toStars.ensureIndex(new BasicDBObject("name", 1));
