@@ -22,8 +22,8 @@ public class Main {
 
         Kare kare = new Kare();
 
-        DB one = client.getDB("RecoA");
-        DB two = client.getDB("RecoB");
+        DB one = client.getDB(System.getProperty("db.one"));
+        DB two = client.getDB(System.getProperty("db.two"));
 
         while (!Thread.interrupted()) {
             Logger.important("Starting an update.");
