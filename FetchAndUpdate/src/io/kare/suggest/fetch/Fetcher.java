@@ -139,11 +139,7 @@ public class Fetcher {
             url += access;
         }
 
-        try {
-            return URLEncoder.encode(url, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return url;
     }
 
 
