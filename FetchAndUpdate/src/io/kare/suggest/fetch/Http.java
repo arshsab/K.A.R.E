@@ -3,6 +3,7 @@ package io.kare.suggest.fetch;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -24,10 +25,14 @@ public class Http {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-        String data = br.lines()
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-                .toString();
+        try {
+            String data = br.lines()
+                    .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                    .toString();
 
-        return data;
+            return data;
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
     }
 }
