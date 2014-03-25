@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Adrian Chmielewski-Anders
@@ -23,13 +24,7 @@ public class ReadmeCorrelations {
         if (tags == null) {
             initializeTags();
         }
-        List<String> keywords = new ArrayList<>();
-        Arrays.stream(words).forEach((String s) -> {
-            if (tags.contains(s)) {
-                keywords.add(s);
-            }
-        });
-        return keywords;
+        return Arrays.stream(words).filter(tags::contains).collect(Collectors.toList());
     }
 
     private static void initializeTags() {
