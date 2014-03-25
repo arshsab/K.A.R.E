@@ -1,6 +1,5 @@
 package io.kare.suggest.readmes;
 
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -18,7 +17,7 @@ public class ReadmeCorrelations {
 
     private static ArrayList<String> tags = null;
 
-    public static List<String> getCorrelations(String readme) {
+    public static List<String> getKeyWords(String readme) {
         String[] words = removeChars(readme);
 
         if (tags == null) {

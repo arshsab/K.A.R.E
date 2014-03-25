@@ -56,12 +56,12 @@ public class ReadmeFetcher {
                     if (readmeCursor.size() > 0) {
                         BasicDBObject readmeObject = (BasicDBObject) readmeCursor.next();
                         String readme = easyGet(url + readmeObject.get("readme_name"));
-                        readmeObject.append("readme", ReadmeCorrelations.getCorrelations(readme));
+                        readmeObject.append("readme", ReadmeCorrelations.getKeyWords(readme));
                         readmes.save(readmeObject);
                     } else {
                         ReadmeOptionPair pair = hardGet(url);
                         readmes.insert(new BasicDBObject("readme",
-                                ReadmeCorrelations.getCorrelations(pair.getReadme()))
+                                ReadmeCorrelations.getKeyWords(pair.getReadme()))
                                 .append("readme_name", pair.getName())
                                 .append("name", repoObject.get("name")));
                     }
