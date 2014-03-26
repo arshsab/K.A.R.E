@@ -6,6 +6,7 @@ import io.kare.suggest.Logger;
 
 import java.io.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author arshsab
@@ -15,6 +16,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Fetcher {
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private final int MAX_CONCURRENT_REQUESTS = (System.getProperty("suggest.fetch.Fetcher.max") == null) ?
+            Integer.parseInt(System.getProperty("suggest.fetch.Fetcher.max")) :
+            8;
+
+    private final AtomicInteger dispatched = new AtomicInteger();
     private final AtomicBoolean error = new AtomicBoolean(false);
     private final String access;
     private final Http http = new Http();
@@ -31,6 +37,8 @@ public class Fetcher {
             throw new IOException("500 Error has occurred. Stop the world!");
         }
 
+        claimRequest();
+
         boolean isSearch = isSearchUrl(url);
         String fixed = prepUrl(url);
 
@@ -40,15 +48,14 @@ public class Fetcher {
             waitOnNormal();
         }
 
+        Logger.debug("Fetching URL: " + url);
+
         String ret;
         try {
             ret = http.get(fixed);
         } catch (IOException ioe) {
             if (ioe.getMessage().contains("404")) {
                 throw new FileNotFoundException();
-            } else if (ioe.getMessage().contains("500")) {
-                error.getAndSet(true);
-                throw ioe;
             } else if (ioe.getMessage().contains("403")) {
                 while (!(isSearch ? isSearchReady() : isNormalReady())) {
                     try {
@@ -60,15 +67,31 @@ public class Fetcher {
 
                 ret = fetch(url);
             } else {
+                error.set(true);
                 throw ioe;
             }
+        } finally {
+            relinquishClaim();
         }
-
-        Logger.debug("Fetching URL: " + url);
 
         return ret;
     }
 
+    private void claimRequest() {
+        while (dispatched.getAndIncrement() > MAX_CONCURRENT_REQUESTS) {
+            dispatched.getAndDecrement();
+            try {
+                dispatched.wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void relinquishClaim() {
+        dispatched.getAndDecrement();
+        dispatched.notify();
+    }
 
     private void waitOnNormal() {
         while (!canProceed.get()) {
