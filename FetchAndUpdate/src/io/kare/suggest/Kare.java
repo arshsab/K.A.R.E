@@ -59,7 +59,7 @@ public class Kare {
     public void init(DB db) {
         if (!db.collectionExists("meta")) {
             db.createCollection("meta", null);
-            db.getCollection("meta").insert(new BasicDBObject("role", "since").append("value", 1));
+            db.getCollection("meta").insert(new BasicDBObject("role", "since").append("value", 0));
         }
     }
 }
