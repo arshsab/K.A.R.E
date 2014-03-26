@@ -23,8 +23,9 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
-        Objects.requireNonNull(System.getProperty("kare.api-key"),
-                "System property: kare.api-key cannot be null");
+        if (System.getProperty("kare.api-key") == null) {
+            System.setProperty("kare.api-key", "");
+        }
 
         this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
     }
