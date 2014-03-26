@@ -1,9 +1,7 @@
 package io.kare.suggest.stars;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
+import com.mongodb.*;
+import io.kare.suggest.Logger;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,15 +25,23 @@ public class CorrelationsAlgorithm {
         DBCollection repos = db.getCollection("repos");
         DBCollection scores = db.getCollection("scores");
 
+        int completed = 0;
+
         DBCursor repoCursor = repos.find();
+        repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+
         while (repoCursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) repoCursor.next();
 
             Map<String, Integer> correlations = new HashMap<>(20_000);
 
+            Logger.debug("Starting with repo: " + repo.getString("name"));
+
             DBCursor gazerCursor = stars.find(new BasicDBObject("name", repo.getString("name")));
             while (gazerCursor.hasNext()) {
                 BasicDBObject gazer = (BasicDBObject) gazerCursor.next();
+
+                Logger.debug("Found gazer for " + repo.getString("name") + " named " + gazer.getString("gazer"));
 
                 DBCursor correlationCursor = stars.find(new BasicDBObject("gazer", gazer.getString("gazer")));
                 while (correlationCursor.hasNext()) {
@@ -71,6 +77,8 @@ public class CorrelationsAlgorithm {
                     .append("score", score)
                 );
             }
+
+            Logger.info("Correlations for: #" + ++completed + " (" + repo.getString("name") + ")");
         }
     }
 }

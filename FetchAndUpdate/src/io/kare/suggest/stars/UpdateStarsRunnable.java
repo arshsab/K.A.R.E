@@ -36,6 +36,8 @@ public class UpdateStarsRunnable implements Runnable {
     public void run() {
         DBCollection collection = to.getCollection("stars");
 
+        Logger.info("Updating repo: " + repo + "from: " + start + " to " + end);
+
         for (int i = start; i <= end; i++) {
             String data;
             try {

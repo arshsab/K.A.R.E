@@ -1,9 +1,6 @@
 package io.kare.suggest.stars;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
+import com.mongodb.*;
 
 /**
  * @author arshsab
@@ -23,7 +20,11 @@ public class CopyOverStarsAlgorithm {
             .append("unique", true)
         );
 
-        fromStars.find().forEach(toStars::insert);
+        fromStars.find().forEach((repo) -> {
+            try {
+                toStars.insert(repo);
+            } catch (MongoException ignored) {}
+        });
 
         toStars.ensureIndex(new BasicDBObject("gazer", 1));
         toStars.ensureIndex(new BasicDBObject("name", 1));

@@ -44,6 +44,7 @@ public class Kare {
         Logger.important("Loading in all the new stars.");
         ExecutorService exec = Executors.newFixedThreadPool(10);
 
+        to.getCollection("stars").drop();
         DBCollection repos = to.getCollection("repos");
         for (Map.Entry<String, Integer> repo : outOfDateRepos.entrySet()) {
             int totalStars = ((BasicDBObject) repos.findOne(

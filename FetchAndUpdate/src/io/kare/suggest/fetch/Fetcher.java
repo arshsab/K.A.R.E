@@ -2,6 +2,7 @@ package io.kare.suggest.fetch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.kare.suggest.Logger;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -63,6 +64,8 @@ public class Fetcher {
                 throw ioe;
             }
         }
+
+        Logger.debug("Fetching URL: " + url);
 
         return ret;
     }

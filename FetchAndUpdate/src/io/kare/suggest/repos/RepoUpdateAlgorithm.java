@@ -27,8 +27,9 @@ public class RepoUpdateAlgorithm {
 
     public void update(DB db) throws IOException {
         DBCollection repos = db.getCollection("repos");
-        repos.createIndex(new BasicDBObject("name", 1), new BasicDBObject("unique", true));
-        repos.createIndex(new BasicDBObject("stargazers", 1));
+        repos.drop();
+
+        repos.ensureIndex(new BasicDBObject("gazers", 1));
 
         int stars = Integer.parseInt(System.getProperty("star-threshold"));
 
@@ -42,12 +43,14 @@ public class RepoUpdateAlgorithm {
                         "&order=asc" +
                         "&per_page=100" +
                         "&page=" + i +
-                        "&q=stars:>=" + stars
+                        "&q=stars:%3E=" + stars
                 );
 
                 JsonNode node = mapper.readTree(data);
 
                 node = node.path("items");
+
+                Logger.debug("API request yielded: " + node.size() + " repos.");
 
                 node.forEach(newRepos::add);
             }
@@ -63,10 +66,12 @@ public class RepoUpdateAlgorithm {
                         .append("default_branch", node.path("default_branch").textValue())
                 ;
 
-                Logger.info("Inserting Repo: " + repo.toString());
+                Logger.info("Inserting Repo: " + repo.get("name"));
 
                 repos.insert(repo);
             }
+
+            Logger.debug("Inserting: " + newRepos.size() + " repos.");
 
             if (newRepos.size() < 1000) {
                 break;

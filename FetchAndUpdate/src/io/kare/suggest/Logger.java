@@ -6,6 +6,14 @@ package io.kare.suggest;
  */
 
 public class Logger {
+    private static boolean debug;
+
+    static {
+        String debug = System.getProperty("debug");
+
+        Logger.debug = debug != null && Boolean.parseBoolean(debug);
+    }
+
     public static void important(String str) {
         System.out.println("[IMPORTANT]: " + str);
     }
@@ -23,6 +31,7 @@ public class Logger {
     }
 
     public static void debug(String str) {
-        System.out.println("[DEBUG]: " + str);
+        if (debug)
+            System.out.println("[DEBUG]: " + str);
     }
 }
