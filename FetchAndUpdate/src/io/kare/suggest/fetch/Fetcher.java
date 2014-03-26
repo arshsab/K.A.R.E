@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kare.suggest.Logger;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
