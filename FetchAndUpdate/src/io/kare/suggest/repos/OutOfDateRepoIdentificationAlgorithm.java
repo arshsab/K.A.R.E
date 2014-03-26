@@ -31,6 +31,8 @@ public class OutOfDateRepoIdentificationAlgorithm {
     }
 
     public static void identify(DBCollection repos, DBCollection updates, Fetcher fetcher) throws IOException {
+        Logger.important("Starting to search for out-of-date repos. " + repos.count() + " repos to check.");
+
         DBCursor cursor = repos.find();
         while (cursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) cursor.next();
@@ -42,6 +44,7 @@ public class OutOfDateRepoIdentificationAlgorithm {
                 int alreadyScraped = repo.getInt("scraped_stars");
                 int currentStarCount = root.path("stargazers_count").intValue();
 
+                // Mark the repo as ready to be updates with new stars.
                 if (currentStarCount - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
                     updates.insert(new BasicDBObject()
                         .append("repo"     , repoName)
@@ -49,6 +52,7 @@ public class OutOfDateRepoIdentificationAlgorithm {
                     );
                 }
 
+                // Update all the repo logistics anyways.
                 BasicDBObject repoUpdate = new BasicDBObject()
                     .append("$set", new BasicDBObject("gazers"        , root.path("stargazers_count")))
                     .append("$set", new BasicDBObject("watchers"      , root.path("watchers_count")))
@@ -62,5 +66,7 @@ public class OutOfDateRepoIdentificationAlgorithm {
                 Logger.warn("Could not locate: " + repo.getString("name"));
             }
         }
+
+        Logger.important("Finised searching for out-of-date repos.");
     }
 }

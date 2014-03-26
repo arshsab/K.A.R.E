@@ -22,8 +22,7 @@ public class Main {
 
         Kare kare = new Kare();
 
-        DB one = client.getDB(System.getProperty("db.one"));
-        DB two = client.getDB(System.getProperty("db.two"));
+        DB db = client.getDB(System.getProperty("mongo.db"));
 
         String _runs = System.getProperty("kare.runs");
 
@@ -37,15 +36,9 @@ public class Main {
         int i = 0;
         while (!Thread.interrupted() && i++ < runs) {
             Logger.important("Starting an update.");
-            kare.update(one, two);
+            kare.update(db);
             Logger.important("Completed an update. Sleeping for 1 / 2 hour before next update.");
             Thread.sleep(1800 * 1000);
-
-            one.dropDatabase();
-
-            DB temp = one;
-            one = two;
-            two = temp;
         }
     }
 }

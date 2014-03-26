@@ -17,8 +17,8 @@ public class Fetcher {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final int MAX_CONCURRENT_REQUESTS = (System.getProperty("suggest.fetch.Fetcher.max") == null) ?
-            Integer.parseInt(System.getProperty("suggest.fetch.Fetcher.max")) :
-            8;
+            8 :
+            Integer.parseInt(System.getProperty("suggest.fetch.Fetcher.max"));
 
     private final AtomicInteger dispatched = new AtomicInteger();
     private final AtomicBoolean error = new AtomicBoolean(false);
