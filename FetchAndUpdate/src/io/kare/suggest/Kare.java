@@ -47,7 +47,7 @@ public class Kare {
 
         int newSince = RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), sinceDBObject.getInt("value"));
 
-        meta.update(new BasicDBObject("role", "since"), new BasicDBObject("role", "since").append("value", newSince));
+        meta.update(new BasicDBObject("role", "since"), new BasicDBObject("$set", new BasicDBObject("value", newSince)));
 
         OutOfDateRepoIdentificationAlgorithm.identify(db.getCollection("repos"), db.getCollection("updates"), fetcher);
 
