@@ -19,13 +19,13 @@ import java.io.IOException;
 public class UpdateStarsRunnable implements Runnable {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final DB to;
+    private final DBCollection stars;
     private final String repo;
     private final int start, end;
     private final Fetcher fetcher;
 
-    public UpdateStarsRunnable(DB to, Fetcher fetcher, String repo, int start, int end) {
-        this.to = to;
+    public UpdateStarsRunnable(DBCollection stars, Fetcher fetcher, String repo, int start, int end) {
+        this.stars = stars;
         this.repo = repo;
         this.fetcher = fetcher;
         this.start = start;
@@ -34,8 +34,6 @@ public class UpdateStarsRunnable implements Runnable {
 
     @Override
     public void run() {
-        DBCollection collection = to.getCollection("stars");
-
         Logger.info("Updating repo: " + repo + "from: " + start + " to " + end);
 
         for (int i = start; i <= end; i++) {
@@ -44,11 +42,11 @@ public class UpdateStarsRunnable implements Runnable {
                 data = fetcher.fetch("repos/" + repo + "/stargazers?per_page=100&page=" + i);
             } catch (FileNotFoundException fnfe) {
                 Logger.warn("Could not load in repo: " + repo);
-                return;
+                break;
             } catch (IOException e) {
                 e.printStackTrace();
                 Logger.fatal("Had a problem with getting a repo: " + e.getMessage());
-                return;
+                break;
             }
 
             JsonNode node;
@@ -61,11 +59,13 @@ public class UpdateStarsRunnable implements Runnable {
             for (int j = 0; node.has(j); j++) {
                 String name = node.path(j).get("login").textValue();
 
-                collection.insert(new BasicDBObject()
-                    .append("name", repo)
-                    .append("gazer", name)
+                stars.insert(new BasicDBObject()
+                        .append("name", repo)
+                        .append("gazer", name)
                 );
             }
         }
+
+        Logger.info("Finished with updating repo: " + repo);
     }
 }

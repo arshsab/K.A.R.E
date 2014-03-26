@@ -13,17 +13,19 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String... args) throws IOException, InterruptedException {
-        System.getProperties().load(new FileInputStream(args[0]));
+        if (args.length == 0) {
+            Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
+            return;
+        }
 
-        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+        System.getProperties().load(new FileInputStream(args[0]));
 
         MongoClient client = new MongoClient(System.getProperty("mongo.host"),
                 Integer.parseInt(System.getProperty("mongo.port")));
 
         Kare kare = new Kare();
 
-        DB one = client.getDB(System.getProperty("db.one"));
-        DB two = client.getDB(System.getProperty("db.two"));
+        DB db = client.getDB(System.getProperty("mongo.db"));
 
         String _runs = System.getProperty("kare.runs");
 
@@ -34,18 +36,14 @@ public class Main {
             runs = Integer.parseInt(_runs);
         }
 
+        kare.init(db);
+
         int i = 0;
         while (!Thread.interrupted() && i++ < runs) {
             Logger.important("Starting an update.");
-            kare.update(one, two);
+            kare.update(db);
             Logger.important("Completed an update. Sleeping for 1 / 2 hour before next update.");
             Thread.sleep(1800 * 1000);
-
-            one.dropDatabase();
-
-            DB temp = one;
-            one = two;
-            two = temp;
         }
     }
 }
