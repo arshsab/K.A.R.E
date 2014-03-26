@@ -1,11 +1,18 @@
 package io.kare.suggest.repos;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import io.kare.suggest.Logger;
+import io.kare.suggest.fetch.Fetcher;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,35 +21,46 @@ import java.util.Map;
  */
 
 public class OutOfDateRepoIdentificationAlgorithm {
-    private final DB original, next;
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final int STAR_UPDATE_THRESHOLD;
 
-    public OutOfDateRepoIdentificationAlgorithm(DB original, DB next) {
-        this.original = original;
-        this.next = next;
+    static {
+        String prop = System.getProperty("suggest.repos.OutOfDateRepoIdentificationAlgorithm.update-threshold");
+
+        STAR_UPDATE_THRESHOLD = prop == null ? 25 : Integer.parseInt(prop);
     }
 
-    public Map<String, Integer> identify() {
-        Map<String, Integer> ret = new HashMap<>();
-
-        DBCollection originalRepos = original.getCollection("repos");
-        DBCollection newRepos = next.getCollection("repos");
-
-        DBCursor cursor = newRepos.find();
+    public static void identify(DBCollection repos, DBCollection updates, Fetcher fetcher) throws IOException {
+        DBCursor cursor = repos.find();
         while (cursor.hasNext()) {
-            BasicDBObject newRepo = (BasicDBObject) cursor.next();
-            BasicDBObject oldRepo = (BasicDBObject) originalRepos.findOne(
-                    new BasicDBObject("name", newRepo.getString("name"))
-            );
+            BasicDBObject repo = (BasicDBObject) cursor.next();
+            String repoName = repo.getString("name");
 
-            if (oldRepo == null) {
-                ret.put(newRepo.getString("name"), newRepo.getInt("gazers"));
-            } else {
-                int diff = newRepo.getInt("gazers") - oldRepo.getInt("gazers");
+            try {
+                JsonNode root = mapper.readTree(fetcher.fetch("/repos/" + repoName));
 
-                ret.put(newRepo.getString("name"), diff);
+                int alreadyScraped = repo.getInt("scraped_stars");
+                int currentStarCount = root.path("stargazers_count").intValue();
+
+                if (currentStarCount - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
+                    updates.insert(new BasicDBObject()
+                        .append("repo"     , repoName)
+                        .append("new_stars", currentStarCount - alreadyScraped)
+                    );
+                }
+
+                BasicDBObject repoUpdate = new BasicDBObject()
+                    .append("$set", new BasicDBObject("gazers"        , root.path("stargazers_count")))
+                    .append("$set", new BasicDBObject("watchers"      , root.path("watchers_count")))
+                    .append("$set", new BasicDBObject("description"   , root.path("description")))
+                    .append("$set", new BasicDBObject("default_branch", root.path("default_branch")))
+                    .append("$set", new BasicDBObject("language"      , root.path("language")))
+                    .append("$set", new BasicDBObject("owner"         , root.path("owner")));
+
+                repos.update(new BasicDBObject("name", repoName), repoUpdate);
+            } catch (FileNotFoundException fnfe) {
+                Logger.warn("Could not locate: " + repo.getString("name"));
             }
         }
-
-        return ret;
     }
 }

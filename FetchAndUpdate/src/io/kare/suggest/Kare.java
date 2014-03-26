@@ -11,10 +11,13 @@ import io.kare.suggest.stars.CorrelationsAlgorithm;
 import io.kare.suggest.stars.UpdateStarsRunnable;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * @author arshsab
@@ -25,56 +28,39 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
+        Objects.requireNonNull(System.getProperty("kare.api-key"),
+                "System property: kare.api-key cannot be null");
+
         this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
     }
 
-    public void update(DB from,  DB to) throws IOException {
-        to.createCollection("repos", null);
-        to.createCollection("stars", null);
-        to.createCollection("correlations", null);
+    public void update(DB db) throws IOException {
+        String[] collections = {
+                "repos",
+                "stars",
+                "updates",
+                "scores"
+        };
 
-        Logger.important("Starting a search for all repos.");
-        new RepoUpdateAlgorithm(fetcher).update(to);
-        Logger.important("Finished a search for all repos.");
+        Arrays.stream(collections)
+              .filter(s -> !db.collectionExists(s))
+              .forEach(s -> db.createCollection(s, null));
 
-        Logger.important("Scanning for out of date repos.");
-        Map<String, Integer> outOfDateRepos = new OutOfDateRepoIdentificationAlgorithm(from, to).identify();
-        Logger.important("Finished scanning for out of date repos.");
+        DBCollection meta = db.getCollection("meta");
+        BasicDBObject sinceDBObject = (BasicDBObject) meta.findOne(new BasicDBObject("role", "since"));
 
-        Logger.important("Loading in all the new stars.");
-        ExecutorService exec = Executors.newFixedThreadPool(10);
+        int newSince = RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), sinceDBObject.getInt("value"));
 
-        to.getCollection("stars").drop();
-        DBCollection repos = to.getCollection("repos");
-        for (Map.Entry<String, Integer> repo : outOfDateRepos.entrySet()) {
-            int totalStars = ((BasicDBObject) repos.findOne(
-                    new BasicDBObject("name", repo.getKey()))
-            ).getInt("gazers");
+        meta.update(new BasicDBObject("role", "since"), new BasicDBObject("role", "since").append("value", newSince));
 
-            exec.submit(new UpdateStarsRunnable(to, fetcher, repo.getKey(),
-                    (int) (totalStars - Math.ceil(repo.getValue() / 100.0)), totalStars));
 
-            // Temporary. After one run like this, we will change the algorithm a little to load the newest stars rather
-            // than the oldest stars.
+
+    }
+
+    public void init(DB db) {
+        if (!db.collectionExists("meta")) {
+            db.createCollection("meta", null);
+            db.getCollection("meta").insert(new BasicDBObject("role", "since").append("value", 1));
         }
-
-        exec.shutdown();
-        while (!exec.isTerminated()) {
-            try {
-                exec.awaitTermination(60, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        Logger.important("Finished loading in all the new stars.");
-
-        Logger.important("Loading in all the old stars.");
-        new CopyOverStarsAlgorithm().copy(from, to);
-        Logger.important("Finished loading in all the old stars.");
-
-        Logger.important("Starting the Correlations algorithm.");
-        new CorrelationsAlgorithm(to).correlate();
-        Logger.important("Finished the Correlations algorithm.");
     }
 }

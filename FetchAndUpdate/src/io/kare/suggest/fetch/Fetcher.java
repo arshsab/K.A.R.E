@@ -28,7 +28,7 @@ public class Fetcher {
     private final AtomicBoolean searchCanProceed = new AtomicBoolean(true);
 
     public Fetcher(String access) {
-        this.access = access;
+        this.access = access == null ? "" : access;
     }
 
     // Fetches the URL. Blocks if necessary until API requests are available.
