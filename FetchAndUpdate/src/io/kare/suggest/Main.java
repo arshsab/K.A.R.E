@@ -13,9 +13,12 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String... args) throws IOException, InterruptedException {
-        System.getProperties().load(new FileInputStream(args[0]));
+        if (args.length == 0) {
+            Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
+            return;
+        }
 
-        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+        System.getProperties().load(new FileInputStream(args[0]));
 
         MongoClient client = new MongoClient(System.getProperty("mongo.host"),
                 Integer.parseInt(System.getProperty("mongo.port")));
@@ -32,6 +35,8 @@ public class Main {
         } else {
             runs = Integer.parseInt(_runs);
         }
+
+        kare.init(db);
 
         int i = 0;
         while (!Thread.interrupted() && i++ < runs) {

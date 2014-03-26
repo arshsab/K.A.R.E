@@ -25,7 +25,7 @@ public class OutOfDateRepoIdentificationAlgorithm {
     private static final int STAR_UPDATE_THRESHOLD;
 
     static {
-        String prop = System.getProperty("suggest.repos.OutOfDateRepoIdentificationAlgorithm.update-threshold");
+        String prop = System.getProperty("kare.repos.star-update-threshold");
 
         STAR_UPDATE_THRESHOLD = prop == null ? 25 : Integer.parseInt(prop);
     }

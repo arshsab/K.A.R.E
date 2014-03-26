@@ -21,7 +21,7 @@ import java.util.Objects;
 public class RepoUpdateAlgorithm {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Fetcher fetcher
-            = new Fetcher(Objects.requireNonNull(System.getProperty("api-key"), "No api-key."));
+            = new Fetcher(Objects.requireNonNull(System.getProperty("kare.fetch.api-key"), "No api-key."));
 
     public static int update(Fetcher fetcher, DBCollection repos, int since) throws IOException {
         Logger.important("Starting repo update from: " + since);
