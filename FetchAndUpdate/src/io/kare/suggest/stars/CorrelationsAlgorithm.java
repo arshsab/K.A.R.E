@@ -25,6 +25,8 @@ public class CorrelationsAlgorithm {
         while (repoCursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) repoCursor.next();
 
+            scores.remove(new BasicDBObject("repo", repo.getString("repo")));
+
             Map<String, Integer> correlations = new HashMap<>(20_000);
 
             Logger.debug("Starting with repo: " + repo.getString("repo"));

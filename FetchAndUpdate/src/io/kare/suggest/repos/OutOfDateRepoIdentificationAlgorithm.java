@@ -6,6 +6,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.sun.tools.classfile.StackMapTable_attribute;
 import io.kare.suggest.Logger;
 import io.kare.suggest.fetch.Fetcher;
 
@@ -59,7 +60,8 @@ public class OutOfDateRepoIdentificationAlgorithm {
                     .append("$set", new BasicDBObject("description"   , root.path("description")))
                     .append("$set", new BasicDBObject("default_branch", root.path("default_branch")))
                     .append("$set", new BasicDBObject("language"      , root.path("language")))
-                    .append("$set", new BasicDBObject("owner"         , root.path("owner")));
+                    .append("$set", new BasicDBObject("owner"         , root.path("owner")))
+                    .append("$set", new BasicDBObject("new_stars"     , currentStarCount));
 
                 repos.update(new BasicDBObject("name", repoName), repoUpdate);
             } catch (FileNotFoundException fnfe) {
