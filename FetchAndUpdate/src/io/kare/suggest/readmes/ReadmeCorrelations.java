@@ -27,9 +27,9 @@ public class ReadmeCorrelations {
     }
 
     private static void initializeTags() {
-        // todo: fix this path so it's the right location for tags.csv
+        // todo: fix this path so it's the right location for tags.txt
         try {
-            new BufferedReader(new FileReader("tags.csv")).lines().forEach(tags::add);
+            new BufferedReader(new FileReader("tags.txt")).lines().forEach(tags::add);
         } catch (FileNotFoundException ignored) {}
     }
 
