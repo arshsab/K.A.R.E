@@ -5,6 +5,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 
 import io.kare.suggest.fetch.Fetcher;
+import io.kare.suggest.fetch.ReadmeFetcher;
 import io.kare.suggest.repos.OutOfDateRepoIdentificationAlgorithm;
 import io.kare.suggest.repos.RepoUpdateAlgorithm;
 import io.kare.suggest.stars.CorrelationsAlgorithm;
@@ -46,21 +47,37 @@ public class Kare {
         DBCollection meta = db.getCollection("meta");
         BasicDBObject sinceDBObject = (BasicDBObject) meta.findOne(new BasicDBObject("role", "since"));
 
-        int newSince = RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), sinceDBObject.getInt("value"));
+        int newSince = RepoUpdateAlgorithm.update(fetcher,
+                                                  db.getCollection("repos"),
+                                                    sinceDBObject.getInt("value"));
 
-        meta.update(new BasicDBObject("role", "since"), new BasicDBObject("$set", new BasicDBObject("value", newSince)));
+        meta.update(new BasicDBObject("role", "since"),
+                    new BasicDBObject("$set",
+                    new BasicDBObject("value", newSince)));
 
-        OutOfDateRepoIdentificationAlgorithm.identify(db.getCollection("repos"), db.getCollection("updates"), fetcher);
+        OutOfDateRepoIdentificationAlgorithm.identify(db.getCollection("repos"),
+                                                      db.getCollection("updates"),
+                                                      fetcher);
 
-        UpdateStarsAlgorithm.update(db.getCollection("updates"), db.getCollection("stars"), fetcher);
+        // fetch the readmes and generate a list of keywords
+        // for every repo based on the readme and description of
+        // the readme
+        ReadmeFetcher.fetch(db.getCollection("repos"),
+                            db.getCollection("readmes"));
 
-        CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"));
+        UpdateStarsAlgorithm.update(db.getCollection("updates"),
+                                    db.getCollection("stars"), fetcher);
+
+        CorrelationsAlgorithm.correlate(db.getCollection("stars"),
+                                        db.getCollection("repos"),
+                                        db.getCollection("scores"));
     }
 
     public void init(DB db) {
         if (!db.collectionExists("meta")) {
             db.createCollection("meta", null);
-            db.getCollection("meta").insert(new BasicDBObject("role", "since").append("value", 0));
+            db.getCollection("meta").insert(new BasicDBObject("role", "since")
+                                            .append("value", 0));
         }
     }
 }

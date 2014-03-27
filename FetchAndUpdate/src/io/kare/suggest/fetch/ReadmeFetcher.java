@@ -38,10 +38,8 @@ public class ReadmeFetcher {
             "readme.md"
     };
 
-    public static void fetch(DB db) {
+    public static void fetch(DBCollection repos, DBCollection readmes) {
 
-        DBCollection repos   = db.getCollection("repos"),
-                     readmes = db.getCollection("readmes");
         ExecutorService exec = Executors.newFixedThreadPool(8);
 
         DBCursor repoCursor = repos.find();
@@ -52,7 +50,8 @@ public class ReadmeFetcher {
                     String url = getURL(repoObject);
                     // check if we've already indexed this readme, avoid having to try
                     // different possible readme options
-                    DBCursor readmeCursor = readmes.find(new BasicDBObject("name", repoObject.get("name")));
+                    DBCursor readmeCursor = readmes.find(new BasicDBObject("name",
+                            repoObject.get("name")));
                     if (readmeCursor.size() > 0) {
                         BasicDBObject readmeObject = (BasicDBObject) readmeCursor.next();
                         String readme = easyGet(url + readmeObject.get("readme_name"));
@@ -87,8 +86,8 @@ public class ReadmeFetcher {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                Logger.warn("The possibility " + possibility + " is not vaild for "
-                + url);
+                Logger.warn("The possibility " + possibility +
+                        " is not vaild for " + url);
             }
         }
         // default so we don't have to deal with null strings
