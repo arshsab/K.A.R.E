@@ -1,7 +1,6 @@
 package io.kare.suggest.fetch;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import io.kare.suggest.Logger;
@@ -40,12 +39,13 @@ public class ReadmeFetcher {
 
     public static void fetch(DBCollection repos, DBCollection readmes) {
 
-        ExecutorService exec = Executors.newFixedThreadPool(8);
+        ExecutorService exec = Executors.newFixedThreadPool(1);
 
         DBCursor repoCursor = repos.find();
         try {
             while (repoCursor.hasNext()) {
                 exec.submit(() -> {
+                    Logger.info("new runnable submitted to executor service...");
                     BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
                     String url = getURL(repoObject);
                     // check if we've already indexed this readme, avoid having to try
@@ -58,11 +58,16 @@ public class ReadmeFetcher {
                         readmeObject.append("readme", ReadmeCorrelations.getKeyWords(readme));
                         readmes.save(readmeObject);
                     } else {
+                        Logger.info("hardget started: " + url);
                         ReadmeOptionPair pair = hardGet(url);
-                        readmes.insert(new BasicDBObject("readme",
+                        Logger.info("received pair: " + pair.getReadme());
+                        BasicDBObject obj =
+                        new BasicDBObject("readme",
                                 ReadmeCorrelations.getKeyWords(pair.getReadme()))
                                 .append("readme_name", pair.getName())
-                                .append("name", repoObject.get("name")));
+                                .append("name", repoObject.get("name"));
+                        readmes.insert(obj);
+                        System.out.println(obj);
                     }
 
                 });
@@ -80,7 +85,9 @@ public class ReadmeFetcher {
         String readme;
         for (String possibility : POSSIBLE_READMES) {
             try {
+                Logger.info("trying:" + url + possibility);
                 readme = http.get(url + possibility);
+                Logger.info("got readme: " + readme);
                 if (!"Not Found".equals(readme)) {
                     return new ReadmeOptionPair(readme, possibility);
                 }
@@ -105,7 +112,8 @@ public class ReadmeFetcher {
     }
 
     private static String getURL(BasicDBObject object) {
-        return README_BASE_URL + object.get("name") + object.get("branch")
+        String branch = object.get("branch") == null ? "/master" : (String) object.get("branch");
+        return README_BASE_URL + object.get("name") + branch
                 + "/";
     }
 }
