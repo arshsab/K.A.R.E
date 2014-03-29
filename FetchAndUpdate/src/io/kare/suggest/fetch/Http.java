@@ -23,7 +23,7 @@ public class Http {
 
         try {
             Logger.info("In Http.get, getting data");
-            String data = br.lines()
+            String data = br.lines().map(s -> s + "\n")
                     .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
                     .toString();
             Logger.info("Got Data!: " + data);

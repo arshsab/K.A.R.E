@@ -39,12 +39,13 @@ public class ReadmeFetcher {
 
     public static void fetch(DBCollection repos, DBCollection readmes) {
 
-        ExecutorService exec = Executors.newFixedThreadPool(1);
+        ExecutorService exec = Executors.newFixedThreadPool(8);
 
         DBCursor repoCursor = repos.find();
         try {
             while (repoCursor.hasNext()) {
                 exec.submit(() -> {
+                    Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
                     Logger.info("new runnable submitted to executor service...");
                     BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
                     String url = getURL(repoObject);
@@ -62,7 +63,7 @@ public class ReadmeFetcher {
                         ReadmeOptionPair pair = hardGet(url);
                         Logger.info("received pair: " + pair.getReadme());
                         BasicDBObject obj =
-                        new BasicDBObject("readme",
+                        new BasicDBObject("keywords",
                                 ReadmeCorrelations.getKeyWords(pair.getReadme()))
                                 .append("readme_name", pair.getName())
                                 .append("name", repoObject.get("name"));
@@ -78,6 +79,7 @@ public class ReadmeFetcher {
             repoCursor.close();
             exec.shutdown();
         }
+        readmes.createIndex(new BasicDBObject("keywords", 1));
     }
 
     private static ReadmeOptionPair hardGet(String url) {
