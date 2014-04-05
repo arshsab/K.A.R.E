@@ -1,7 +1,6 @@
 package io.kare.suggest.fetch;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import io.kare.suggest.Logger;
@@ -38,32 +37,38 @@ public class ReadmeFetcher {
             "readme.md"
     };
 
-    public static void fetch(DB db) {
+    public static void fetch(DBCollection repos, DBCollection readmes) {
 
-        DBCollection repos   = db.getCollection("repos"),
-                     readmes = db.getCollection("readmes");
         ExecutorService exec = Executors.newFixedThreadPool(8);
 
         DBCursor repoCursor = repos.find();
         try {
             while (repoCursor.hasNext()) {
                 exec.submit(() -> {
+                    Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+                    Logger.info("new runnable submitted to executor service...");
                     BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
                     String url = getURL(repoObject);
                     // check if we've already indexed this readme, avoid having to try
                     // different possible readme options
-                    DBCursor readmeCursor = readmes.find(new BasicDBObject("name", repoObject.get("name")));
+                    DBCursor readmeCursor = readmes.find(new BasicDBObject("name",
+                            repoObject.get("name")));
                     if (readmeCursor.size() > 0) {
                         BasicDBObject readmeObject = (BasicDBObject) readmeCursor.next();
                         String readme = easyGet(url + readmeObject.get("readme_name"));
                         readmeObject.append("readme", ReadmeCorrelations.getKeyWords(readme));
                         readmes.save(readmeObject);
                     } else {
+                        Logger.info("hardget started: " + url);
                         ReadmeOptionPair pair = hardGet(url);
-                        readmes.insert(new BasicDBObject("readme",
+                        Logger.info("received pair: " + pair.getReadme());
+                        BasicDBObject obj =
+                        new BasicDBObject("keywords",
                                 ReadmeCorrelations.getKeyWords(pair.getReadme()))
                                 .append("readme_name", pair.getName())
-                                .append("name", repoObject.get("name")));
+                                .append("name", repoObject.get("name"));
+                        readmes.insert(obj);
+                        System.out.println(obj);
                     }
 
                 });
@@ -74,6 +79,7 @@ public class ReadmeFetcher {
             repoCursor.close();
             exec.shutdown();
         }
+        readmes.createIndex(new BasicDBObject("keywords", 1));
     }
 
     private static ReadmeOptionPair hardGet(String url) {
@@ -81,14 +87,16 @@ public class ReadmeFetcher {
         String readme;
         for (String possibility : POSSIBLE_READMES) {
             try {
+                Logger.info("trying:" + url + possibility);
                 readme = http.get(url + possibility);
+                Logger.info("got readme: " + readme);
                 if (!"Not Found".equals(readme)) {
                     return new ReadmeOptionPair(readme, possibility);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                Logger.warn("The possibility " + possibility + " is not vaild for "
-                + url);
+                Logger.warn("The possibility " + possibility +
+                        " is not vaild for " + url);
             }
         }
         // default so we don't have to deal with null strings
@@ -106,7 +114,8 @@ public class ReadmeFetcher {
     }
 
     private static String getURL(BasicDBObject object) {
-        return README_BASE_URL + object.get("name") + object.get("branch")
+        String branch = object.get("branch") == null ? "/master" : (String) object.get("branch");
+        return README_BASE_URL + object.get("name") + branch
                 + "/";
     }
 }

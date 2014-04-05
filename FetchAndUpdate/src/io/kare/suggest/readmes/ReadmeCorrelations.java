@@ -1,11 +1,13 @@
 package io.kare.suggest.readmes;
 
+import io.kare.suggest.fetch.Http;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,32 +18,47 @@ import java.util.stream.Collectors;
 
 public class ReadmeCorrelations {
 
-    private static ArrayList<String> tags = null;
+    private static ArrayList<String> tags = new ArrayList<>();
 
     public static List<String> getKeyWords(String readme) {
-        String[] words = removeChars(readme);
-
-        if (tags == null) {
+        List<String> words = Arrays.stream(removeChars(readme)).collect(Collectors.toList());
+        words = words.subList(0, Math.min(words.size(), 401));
+        if (tags.isEmpty()) {
             initializeTags();
         }
-        return Arrays.stream(words).filter(tags::contains).collect(Collectors.toList());
+        return tags.stream().filter(words::contains).collect(Collectors.toList());
     }
 
     private static void initializeTags() {
-        // todo: fix this path so it's the right location for tags.csv
+        // todo: fix this path so it's the right location for tags.txt
         try {
-            new BufferedReader(new FileReader("tags.csv")).lines().forEach((s) -> {
-                Collections.addAll(tags, s.split(", "));
-            });
-        } catch (FileNotFoundException ignored) {}
+            Arrays.stream(new Http()
+                    .get("https://raw.github.com/adrianc-a/kare/master/FetchReadme/Data/tags.txt")
+                    .split("\n"))
+                    .forEach(tags::add);
+            System.out.println("printing tags" + tags);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+//        tags = new ArrayList<String>() {{
+//            add("javascript");
+//            add("css");
+//            add("and");
+//            add("the");
+//            add("web");
+//        }};
+//        try {
+//            new BufferedReader(new FileReader("tags.txt")).lines().forEach(tags::add);
+//        } catch (FileNotFoundException ignored) {}
     }
 
     private static String[] removeChars(String readme) {
         // main regex, will remove all of the markdown specific characters
         // while preserving links, also removes a lot of the random chars like
         // ,.=-*<> etc.
-        return readme.replaceAll("[^A-Za-z0-9\\.&&[(.+) ?+\\[.+\\]]]|[#?+]|[`?"
-                + "+]|[<|>|**|*|-|,|=|!]", " ").replaceAll("\\s+", "")
+        return readme.replaceAll("\n", "").replaceAll("[^A-Za-z0-9\\.&&[(.+) ?+\\[.+\\]]]|[#?+]|[`?"
+                + "+]|[<|>|**|*|-|,|=|!]", " ").replaceAll("\\s+", "    ")
                 .toLowerCase().trim().split(" ");
     }
 }
