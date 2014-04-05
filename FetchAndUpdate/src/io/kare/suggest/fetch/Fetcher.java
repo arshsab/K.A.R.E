@@ -7,6 +7,8 @@ import io.kare.suggest.Logger;
 import java.io.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author arshsab
@@ -27,8 +29,14 @@ public class Fetcher {
     private final AtomicBoolean canProceed = new AtomicBoolean(true);
     private final AtomicBoolean searchCanProceed = new AtomicBoolean(true);
 
+    public Fetcher() {
+        this(null);
+    }
+
     public Fetcher(String access) {
-        this.access = access == null ? "" : access;
+        String attempt = access == null ? System.getProperty("kare.api-key") : access;
+
+        this.access = attempt == null ? "" : attempt;
     }
 
     // Fetches the URL. Blocks if necessary until API requests are available.
@@ -37,7 +45,6 @@ public class Fetcher {
             throw new IOException("500 Error has occurred. Stop the world!");
         }
 
-        claimRequest();
 
         boolean isSearch = isSearchUrl(url);
         String fixed = prepUrl(url);
@@ -50,6 +57,9 @@ public class Fetcher {
 
         Logger.debug("Fetching URL: " + url);
 
+        claimRequest();
+
+        boolean claimRelinquished = false;
         String ret;
         try {
             ret = http.get(fixed);
@@ -57,21 +67,30 @@ public class Fetcher {
             if (ioe.getMessage().contains("404")) {
                 throw new FileNotFoundException();
             } else if (ioe.getMessage().contains("403")) {
+                if (isSearch) {
+                    searchCanProceed.set(false);
+                } else {
+                    canProceed.set(false);
+                }
+
                 while (!(isSearch ? isSearchReady() : isNormalReady())) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(60000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
 
+                relinquishClaim();
+                claimRelinquished = true;
                 ret = fetch(url);
             } else {
                 error.set(true);
                 throw ioe;
             }
         } finally {
-            relinquishClaim();
+            if (!claimRelinquished)
+                relinquishClaim();
         }
 
         return ret;
@@ -81,7 +100,7 @@ public class Fetcher {
         while (dispatched.getAndIncrement() > MAX_CONCURRENT_REQUESTS) {
             dispatched.getAndDecrement();
             try {
-                dispatched.wait();
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -90,7 +109,6 @@ public class Fetcher {
 
     private void relinquishClaim() {
         dispatched.getAndDecrement();
-        dispatched.notify();
     }
 
     private void waitOnNormal() {
@@ -113,12 +131,16 @@ public class Fetcher {
         }
     }
 
+    private String getApiKey() {
+        return access == null ? System.getProperty("kare.api-key") : access;
+    }
+
     private boolean isSearchReady() throws IOException {
         if (searchCanProceed.get()) {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit?" + access);
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey());
 
         JsonNode node = mapper.readTree(rateLimit);
 
@@ -126,7 +148,10 @@ public class Fetcher {
                         .path("search")
                         .path("remaining").intValue();
 
-        return value != 0;
+        boolean result = value != 0;
+
+        searchCanProceed.set(result);
+        return result;
     }
 
     private boolean isNormalReady() throws IOException {
@@ -134,7 +159,7 @@ public class Fetcher {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit?" + access);
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey());
 
         JsonNode node = mapper.readTree(rateLimit);
 
@@ -142,7 +167,10 @@ public class Fetcher {
                 .path("core")
                 .path("remaining").intValue();
 
-        return value != 0;
+        boolean result = value != 0;
+
+        canProceed.set(result);
+        return result;
     }
 
     private boolean isSearchUrl(String url) {
@@ -159,9 +187,9 @@ public class Fetcher {
             url = "https://api.github.com" + url;
         }
 
-        if (!url.contains(access)) {
+        if (!url.contains(getApiKey())) {
             url += url.contains("?") ? "&" : "?";
-            url += access;
+            url += getApiKey();
         }
 
         return url;

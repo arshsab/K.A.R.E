@@ -14,28 +14,28 @@ import java.util.TreeMap;
  */
 
 public class CorrelationsAlgorithm {
-    public static void correlate(DBCollection stars, DBCollection updates, DBCollection scores) {
+    public static void correlate(DBCollection stars, DBCollection repos, DBCollection scores) {
         Logger.important("Rebuilding correlations for repos that need updates.");
 
         int completed = 0;
 
-        DBCursor repoCursor = updates.find();
+        DBCursor repoCursor = repos.find();
         repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
 
         while (repoCursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) repoCursor.next();
 
-            scores.remove(new BasicDBObject("repo", repo.getString("repo")));
+            scores.remove(new BasicDBObject("repo", repo.getString("indexed_name")));
 
             Map<String, Integer> correlations = new HashMap<>(20_000);
 
-            Logger.debug("Starting with repo: " + repo.getString("repo"));
+            Logger.debug("Starting with repo: " + repo.getString("indexed_name"));
 
-            DBCursor gazerCursor = stars.find(new BasicDBObject("name", repo.getString("repo")));
+            DBCursor gazerCursor = stars.find(new BasicDBObject("name", repo.getString("indexed_name")));
             while (gazerCursor.hasNext()) {
                 BasicDBObject gazer = (BasicDBObject) gazerCursor.next();
 
-                Logger.debug("Found gazer for " + repo.getString("repo") + " named " + gazer.getString("gazer"));
+                Logger.debug("Found gazer for " + repo.getString("indexed_name") + " named " + gazer.getString("gazer"));
 
                 DBCursor correlationCursor = stars.find(new BasicDBObject("gazer", gazer.getString("gazer")));
                 while (correlationCursor.hasNext()) {
@@ -43,7 +43,7 @@ public class CorrelationsAlgorithm {
 
                     String otherRepo = correlation.getString("name");
 
-                    if (!otherRepo.equals(repo.getString("repo"))) {
+                    if (!otherRepo.equals(repo.getString("indexed_name"))) {
                         int nex = correlations.getOrDefault(otherRepo, 0);
 
                         correlations.put(otherRepo, nex + 1);
@@ -60,7 +60,7 @@ public class CorrelationsAlgorithm {
             for (int i = 0; i < 1000 && iter.hasNext(); i++) {
                 Map.Entry<Integer, String> nex = iter.next();
 
-                String thisRepo = repo.getString("repo");
+                String thisRepo = repo.getString("indexed_name");
                 String otherRepo = nex.getValue();
 
                 int score = nex.getKey();

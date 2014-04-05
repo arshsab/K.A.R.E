@@ -1,11 +1,15 @@
 package io.kare.suggest.stars;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import io.kare.suggest.Logger;
+import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -15,43 +19,58 @@ import java.util.concurrent.TimeUnit;
  * @since 03 2014
  */
 
-public class UpdateStarsAlgorithm {
-    public static void update(DBCollection updates, DBCollection stars, Fetcher fetcher) {
-        Logger.important("Starting to update the repos stars.");
+public class UpdateStarsAlgorithm implements RepoConsumer {
+    private static final int STAR_UPDATE_THRESHOLD;
+
+    static {
+        String prop = System.getProperty("kare.repos.star-update-threshold");
+
+        STAR_UPDATE_THRESHOLD = prop == null ? 25 : Integer.parseInt(prop);
+    }
+
+    private final DBCollection stars;
+    private final Fetcher fetcher;
+    private final ExecutorService exec = Executors.newFixedThreadPool(8);
+    private final DBCollection repos;
+
+    public UpdateStarsAlgorithm(DBCollection stars, DBCollection repos, Fetcher fetcher) {
+        this.stars = stars;
+        this.fetcher = fetcher;
+        this.repos = repos;
 
         stars.ensureIndex(new BasicDBObject()
-            .append("repo", 1)
-            .append("gazer", 1),
+                .append("repo", 1)
+                .append("gazer", 1),
                 new BasicDBObject()
-            .append("unique", true)
-            .append("dropDups", true)
+                        .append("unique", true)
+                        .append("dropDups", true)
         );
+    }
 
-        ExecutorService exec = Executors.newFixedThreadPool(8);
+    @Override
+    public void consume(BasicDBObject repo) throws IOException {
+        final int alreadyScraped = repo.getInt("scraped_stars");
+        final int totalStars = repo.getInt("gazers");
 
-        for (DBObject obj : updates.find(new BasicDBObject("new_stars", 1))) {
-            BasicDBObject repo = (BasicDBObject) obj;
+        if (totalStars - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
+            exec.submit(new UpdateStarsRunnable(stars, fetcher, repo.getString("indexed_name"), 0,
+                    (int) Math.ceil((totalStars - alreadyScraped) / 100.0)));
 
-            String name  = repo.getString("repo");
-            int newStars = repo.getInt("new_stars");
+            repo.put("scraped_stars", totalStars);
 
-            exec.submit(new UpdateStarsRunnable(stars, fetcher, name, 0, (int) Math.ceil( newStars / 100.0)));
+            repos.save(repo);
         }
+    }
 
-
+    @Override
+    public void completeProcessing() {
         exec.shutdown();
-
-        while (exec.isTerminated()) {
+        while (!exec.isTerminated()) {
             try {
-                exec.awaitTermination(1000, TimeUnit.SECONDS);
+                exec.awaitTermination(1000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
-
-        stars.ensureIndex(new BasicDBObject("repo", 1));
-        stars.ensureIndex(new BasicDBObject("gazer", 1));
-
-        Logger.important("Finished updating the repos stars.");
     }
 }

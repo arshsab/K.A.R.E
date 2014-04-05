@@ -2,10 +2,8 @@ package io.kare.suggest;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBCollection;
 
 import io.kare.suggest.fetch.Fetcher;
-import io.kare.suggest.repos.OutOfDateRepoIdentificationAlgorithm;
 import io.kare.suggest.repos.RepoUpdateAlgorithm;
 import io.kare.suggest.stars.CorrelationsAlgorithm;
 import io.kare.suggest.stars.UpdateStarsAlgorithm;
@@ -23,11 +21,7 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
-        if (System.getProperty("kare.api-key") == null) {
-            System.setProperty("kare.api-key", "");
-        }
-
-        this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
+        this.fetcher = new Fetcher();
     }
 
     public void update(DB db) throws IOException {
@@ -43,16 +37,11 @@ public class Kare {
               .forEach(s -> db.createCollection(s, null));
 
 
-        DBCollection meta = db.getCollection("meta");
-        BasicDBObject sinceDBObject = (BasicDBObject) meta.findOne(new BasicDBObject("role", "since"));
+        RepoConsumer[] consumers = {
+                new UpdateStarsAlgorithm(db.getCollection("stars"), db.getCollection("repos"), fetcher)
+        };
 
-        int newSince = RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), sinceDBObject.getInt("value"));
-
-        meta.update(new BasicDBObject("role", "since"), new BasicDBObject("$set", new BasicDBObject("value", newSince)));
-
-        OutOfDateRepoIdentificationAlgorithm.identify(db.getCollection("repos"), db.getCollection("updates"), fetcher);
-
-        UpdateStarsAlgorithm.update(db.getCollection("updates"), db.getCollection("stars"), fetcher);
+        RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), consumers);
 
         CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"));
     }

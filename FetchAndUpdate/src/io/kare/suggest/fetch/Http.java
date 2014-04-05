@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 
 /**
  * @author arshsab
@@ -14,8 +12,27 @@ import java.net.URLEncoder;
  */
 
 public class Http {
+    private static final Proxy proxy;
+
+    static {
+        final String host = System.getProperty("fetch.proxy.host");
+        final String port = System.getProperty("fetch.proxy.port");
+
+        if (host == null || port == null) {
+            proxy = null;
+        } else {
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, Integer.parseInt(port)));
+        }
+    }
+
     public String get(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+
+        HttpURLConnection conn;
+        if (proxy == null) {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+        } else {
+            conn = (HttpURLConnection) new URL(url).openConnection(proxy);
+        }
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
