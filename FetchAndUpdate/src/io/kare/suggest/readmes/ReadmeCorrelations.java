@@ -40,17 +40,6 @@ public class ReadmeCorrelations {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
-//        tags = new ArrayList<String>() {{
-//            add("javascript");
-//            add("css");
-//            add("and");
-//            add("the");
-//            add("web");
-//        }};
-//        try {
-//            new BufferedReader(new FileReader("tags.txt")).lines().forEach(tags::add);
-//        } catch (FileNotFoundException ignored) {}
     }
 
     private static String[] removeChars(String readme) {

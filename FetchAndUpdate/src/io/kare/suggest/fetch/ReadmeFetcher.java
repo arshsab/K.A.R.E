@@ -39,13 +39,13 @@ public class ReadmeFetcher {
 
     public static void fetch(DBCollection repos, DBCollection readmes) {
 
-        ExecutorService exec = Executors.newFixedThreadPool(8);
+//        ExecutorService exec = Executors.newFixedThreadPool(8);
 
         DBCursor repoCursor = repos.find();
         try {
             while (repoCursor.hasNext()) {
-                exec.submit(() -> {
-                    Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
+//                exec.submit(() -> {
+//                    Thread.currentThread().setUncaughtExceptionHandler((t, e) -> e.printStackTrace());
                     Logger.info("new runnable submitted to executor service...");
                     BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
                     String url = getURL(repoObject);
@@ -71,13 +71,11 @@ public class ReadmeFetcher {
                         System.out.println(obj);
                     }
 
-                });
+//                });
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
         } finally {
             repoCursor.close();
-            exec.shutdown();
+//            exec.shutdown();
         }
         readmes.createIndex(new BasicDBObject("keywords", 1));
     }
