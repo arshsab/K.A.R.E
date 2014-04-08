@@ -22,7 +22,7 @@ public class ReadmeCorrelations {
 
     public static List<String> getKeyWords(String readme) {
         List<String> words = Arrays.stream(removeChars(readme)).collect(Collectors.toList());
-        words = words.subList(0, Math.min(words.size(), 401));
+//        words = words.subList(0, Math.min(words.size() - 1, 401));
         if (tags.isEmpty()) {
             initializeTags();
         }
@@ -36,7 +36,6 @@ public class ReadmeCorrelations {
                     .get("https://raw.github.com/adrianc-a/kare/master/FetchReadme/Data/tags.txt")
                     .split("\n"))
                     .forEach(tags::add);
-            System.out.println("printing tags" + tags);
         } catch (Throwable e) {
             e.printStackTrace();
         }
