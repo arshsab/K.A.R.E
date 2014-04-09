@@ -20,16 +20,18 @@ public class ReadmeCorrelations {
 
     private static ArrayList<String> tags = new ArrayList<>();
 
-    public static List<String> getKeyWords(String readme) {
+    public List<String> getKeyWords(String readme) {
         List<String> words = Arrays.stream(removeChars(readme)).collect(Collectors.toList());
-//        words = words.subList(0, Math.min(words.size() - 1, 401));
-        if (tags.isEmpty()) {
-            initializeTags();
+        words = words.subList(0, Math.min(words.size() - 1, 401));
+        synchronized (tags) {
+            if (tags.isEmpty()) {
+                initializeTags();
+            }
         }
         return tags.stream().filter(words::contains).collect(Collectors.toList());
     }
 
-    private static void initializeTags() {
+    private void initializeTags() {
         // todo: fix this path so it's the right location for tags.txt
         try {
             Arrays.stream(new Http()
@@ -41,7 +43,7 @@ public class ReadmeCorrelations {
         }
     }
 
-    private static String[] removeChars(String readme) {
+    private String[] removeChars(String readme) {
         // main regex, will remove all of the markdown specific characters
         // while preserving links, also removes a lot of the random chars like
         // ,.=-*<> etc.

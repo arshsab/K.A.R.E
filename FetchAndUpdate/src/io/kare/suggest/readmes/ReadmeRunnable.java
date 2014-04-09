@@ -96,10 +96,11 @@ public class ReadmeRunnable implements Runnable {
         // different possible readme options
         DBCursor readmeCursor = readmes.find(new BasicDBObject("name",
                 repoObject.get("name")));
+        ReadmeCorrelations correlations = new ReadmeCorrelations();
         if (readmeCursor.size() > 0) {
             BasicDBObject readmeObject = (BasicDBObject) readmeCursor.next();
             String readme = easyGet(url + readmeObject.get("readme_name"));
-            readmeObject.append("readme", ReadmeCorrelations.getKeyWords(readme + repoObject.get("description")));
+            readmeObject.append("readme", correlations.getKeyWords(readme + repoObject.get("description")));
             readmes.save(readmeObject);
 //            Logger.info("Done: " + url + readmeObject.get("readme_name"));
         } else {
@@ -107,7 +108,7 @@ public class ReadmeRunnable implements Runnable {
 
             BasicDBObject obj =
                     new BasicDBObject("keywords",
-                            ReadmeCorrelations.getKeyWords(pair.getReadme() + repoObject.get("description")))
+                            correlations.getKeyWords(pair.getReadme() + repoObject.get("description")))
                             .append("readme_name", pair.getName())
                             .append("name", repoObject.get("name"));
             readmes.insert(obj);

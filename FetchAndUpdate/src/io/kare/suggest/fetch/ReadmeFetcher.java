@@ -22,7 +22,7 @@ public class ReadmeFetcher {
         DBCursor repoCursor = repos.find();
         try {
             while (repoCursor.hasNext()) {
-                final BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
+                BasicDBObject repoObject = (BasicDBObject) repoCursor.next();
 //                new ReadmeRunnable(repoObject, readmes).run();
                 exec.submit(new ReadmeRunnable(repoObject, readmes));
             }
