@@ -62,7 +62,8 @@ public class Kare {
         // fetch the readmes and generate a list of keywords
         // for every repo based on the readme and description of
         // the readme
-        ReadmeFetcher.fetch(db.getCollection("repos"),
+        ReadmeFetcher r = new ReadmeFetcher();
+        r.fetch(db.getCollection("repos"),
                             db.getCollection("readmes"));
 
         UpdateStarsAlgorithm.update(db.getCollection("updates"),

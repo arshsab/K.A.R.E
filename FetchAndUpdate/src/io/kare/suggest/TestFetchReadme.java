@@ -13,14 +13,14 @@ import java.net.UnknownHostException;
 
 public class TestFetchReadme {
     public static void main(String[] args) throws UnknownHostException {
-        DB db = new MongoClient().getDB("reco");
+        DB db = new MongoClient().getDB("kare");
         db.createCollection("readmes", null);
 
         // fetch the readmes and generate a list of keywords
         // for every repo based on the readme and description of
         // the readme
-        Logger.info("Starting to fetch...");
-        ReadmeFetcher.fetch(db.getCollection("repos"),
+        ReadmeFetcher r = new ReadmeFetcher();
+        r.fetch(db.getCollection("repos"),
                 db.getCollection("readmes"));
 
     }
