@@ -99,8 +99,13 @@ public class ReadmeRunnable implements Runnable {
         ReadmeCorrelations correlations = new ReadmeCorrelations();
         if (readmeCursor.size() > 0) {
             BasicDBObject readmeObject = (BasicDBObject) readmeCursor.next();
-            String readme = easyGet(url + readmeObject.get("readme_name"));
-            readmeObject.append("readme", correlations.getKeyWords(readme + repoObject.get("description")));
+            if (!"".equals(readmeObject.get("readme_name"))) {
+                String readme = easyGet(url + readmeObject.get("readme_name"));
+
+                readmeObject.append("readme", correlations.getKeyWords(readme + repoObject.get("description")));
+            } else {
+                readmeObject.append("readme", correlations.getKeyWords((String) repoObject.get("description")));
+            }
             readmes.save(readmeObject);
 //            Logger.info("Done: " + url + readmeObject.get("readme_name"));
         } else {
