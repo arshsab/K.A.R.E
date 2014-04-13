@@ -6,12 +6,12 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import io.kare.suggest.Logger;
+import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
+import io.kare.suggest.stars.UpdateStarsAlgorithm;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author arshsab
@@ -19,37 +19,124 @@ import java.util.Objects;
  */
 
 public class RepoUpdateAlgorithm {
+    private static final Map<Integer, Integer> lookupTable = new HashMap<>();
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final int UPPER_BOUND = 100_000;
+    private static final int LOWER_BOUND = 0;
 
-    public static int update(Fetcher fetcher, DBCollection repos, int since) throws IOException {
-        Logger.important("Starting repo update from: " + since);
+    public static void update(Fetcher fetcher, DBCollection repos) throws IOException {
+        Logger.important("Starting repo updates.");
 
-        repos.ensureIndex(new BasicDBObject("gazers", 1));
+        repos.ensureIndex(new BasicDBObject("indexed_name", 1));
+        lookupTable.clear();
 
-        int last = since;
-        while (true) {
-            JsonNode root = mapper.readTree(fetcher.fetch("/repositories?since=" + last));
+        List<Integer> ranges = new ArrayList<>();
 
-            Logger.info("Grabbing repos from id #: " + last);
+        int last = UPPER_BOUND;
+        int n = 1000;
+        while(true) {
+            int nex = binSearch(n, fetcher);
 
-            for (JsonNode node : root) {
-                BasicDBObject repo = new BasicDBObject()
-                        .append("name", node.path("full_name").textValue())
-                        .append("id"            , node.path("id").intValue())
-                        .append("scraped_stars" , 0);
+            Logger.info("Found " + n + " repos above " + nex);
 
-                Logger.info("Inserting Repo: " + repo.get("name"));
-
-                repos.insert(repo);
-                 last = node.path("id").intValue();
+            if (nex == last) {
+                break;
             }
 
-            if (root.size() < 100) {
-                break;
+            last = nex;
+
+            ranges.add(nex);
+
+            n += 1000;
+        }
+
+        int upper = UPPER_BOUND;
+        for (int lower : ranges) {
+            for (int i = 1; i <= 10; i++) {
+                Logger.info("Grabbing repos from: " + upper + " to " + lower);
+
+                JsonNode root = mapper.readTree(fetcher.fetch("/search/repositories?" +
+                        "per_page=100" +
+                        "&page=" + i +
+                        "&q=stars:" + lower + ".." + upper
+                ));
+
+                root = root.path("items");
+
+                for (JsonNode node : root) {
+                    BasicDBObject repo = (BasicDBObject) repos.findOne(
+                            new BasicDBObject("indexed_name", node.path("full_name").textValue().toLowerCase())
+                    );
+
+                    boolean newRepo = repo == null;
+
+                    if (newRepo) {
+                        repo = new BasicDBObject("scraped_stars", 0);
+                    }
+
+                    repo.put("indexed_name", node.path("full_name").textValue().toLowerCase());
+                    repo.put("name", node.path("full_name").textValue());
+                    repo.put("pic_url", node.path("owner").path("avatar_url").textValue());
+                    repo.put("gazers", node.path("stargazers_count").intValue());
+                    repo.put("watchers", node.path("watchers_count").intValue());
+                    repo.put("description", node.path("description").textValue());
+                    repo.put("default_branch", node.path("default_branch").textValue());
+                    repo.put("language", node.path("language").textValue());
+                    repo.put("owner", node.path("owner").path("login").textValue());
+                    repo.put("processable", true);
+
+                    Logger.info("Inserting Repo: " + repo.get("name"));
+
+                    if (newRepo)
+                        repos.insert(repo);
+                    else
+                        repos.save(repo);
+                }
+
+                if (root.size() < 100) {
+                    break;
+                }
+            }
+
+            upper = lower;
+        }
+    }
+
+    private static int binSearch(int num, Fetcher fetcher) throws IOException {
+        int low = LOWER_BOUND;
+        int high = UPPER_BOUND;
+
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            if (grab(mid, fetcher) < num) {
+                high = mid;
+            } else {
+                low = mid + 1;
             }
         }
 
-        Logger.important("Finished Repo Update.");
-        return last;
+        if (grab(low, fetcher) > num) {
+            return UPPER_BOUND;
+        }
+
+        return low;
+    }
+
+    private static int grab(int num, Fetcher fetcher) throws IOException {
+        if (lookupTable.containsKey(num)) {
+            return lookupTable.get(num);
+        }
+
+        Logger.debug("Grabbing: " + num);
+
+        String json = fetcher.fetch("/search/repositories?q=stars:" + num + ".." + UPPER_BOUND);
+
+        JsonNode root = mapper.readTree(json);
+
+        int count = root.path("total_count").intValue();
+
+        lookupTable.put(num, count);
+
+        return count;
     }
 }

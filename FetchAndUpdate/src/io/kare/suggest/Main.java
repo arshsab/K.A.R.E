@@ -4,7 +4,6 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  * @author arshsab
@@ -12,38 +11,39 @@ import java.io.IOException;
  */
 
 public class Main {
-    public static void main(String... args) throws IOException, InterruptedException {
-        if (args.length == 0) {
-            Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
-            return;
-        }
+    public static void main(String... args) throws InterruptedException {
+        try {
+            if (args.length == 0) {
+                Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
+                return;
+            }
 
-        System.getProperties().load(new FileInputStream(args[0]));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Shutting down via shutdown hook.");
+                System.out.flush();
+                System.err.flush();
+            }));
 
-        MongoClient client = new MongoClient(System.getProperty("mongo.host"),
-                Integer.parseInt(System.getProperty("mongo.port")));
+            System.getProperties().load(new FileInputStream(args[0]));
 
-        Kare kare = new Kare();
+            Logger.important("Starting Kare. Version #0.0.1.");
 
-        DB db = client.getDB(System.getProperty("mongo.db"));
+            MongoClient client = new MongoClient(System.getProperty("mongo.host"),
+                    Integer.parseInt(System.getProperty("mongo.port")));
 
-        String _runs = System.getProperty("kare.runs");
+            Kare kare = new Kare();
 
-        int runs;
-        if (_runs == null) {
-            runs = Integer.MAX_VALUE;
-        } else {
-            runs = Integer.parseInt(_runs);
-        }
+            DB db = client.getDB(System.getProperty("mongo.db"));
 
-        kare.init(db);
-
-        int i = 0;
-        while (!Thread.interrupted() && i++ < runs) {
             Logger.important("Starting an update.");
             kare.update(db);
-            Logger.important("Completed an update. Sleeping for 1 / 2 hour before next update.");
-            Thread.sleep(1800 * 1000);
+            Logger.important("Completed an update. Exiting...");
+
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
+
+        System.out.flush();
+        System.err.flush();
     }
 }

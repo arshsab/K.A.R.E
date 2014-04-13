@@ -2,11 +2,10 @@ package io.kare.suggest;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBCollection;
 
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import io.kare.suggest.fetch.Fetcher;
-import io.kare.suggest.fetch.ReadmeFetcher;
-import io.kare.suggest.repos.OutOfDateRepoIdentificationAlgorithm;
 import io.kare.suggest.repos.RepoUpdateAlgorithm;
 import io.kare.suggest.stars.CorrelationsAlgorithm;
 import io.kare.suggest.stars.UpdateStarsAlgorithm;
@@ -24,11 +23,7 @@ public class Kare {
     private final Fetcher fetcher;
 
     Kare() {
-        if (System.getProperty("kare.api-key") == null) {
-            System.setProperty("kare.api-key", "");
-        }
-
-        this.fetcher = new Fetcher(System.getProperty("kare.api-key"));
+        this.fetcher = new Fetcher();
     }
 
     public void update(DB db) throws IOException {
@@ -36,49 +31,76 @@ public class Kare {
                 "repos",
                 "stars",
                 "updates",
-                "scores"
+                "scores",
+                "meta"
         };
 
         Arrays.stream(collections)
-              .filter(s -> !db.collectionExists(s))
-              .forEach(s -> db.createCollection(s, null));
-
+                .filter(s -> !db.collectionExists(s))
+                .forEach(s -> db.createCollection(s, null));
 
         DBCollection meta = db.getCollection("meta");
-        BasicDBObject sinceDBObject = (BasicDBObject) meta.findOne(new BasicDBObject("role", "since"));
 
-        int newSince = RepoUpdateAlgorithm.update(fetcher,
-                                                  db.getCollection("repos"),
-                                                    sinceDBObject.getInt("value"));
+        if (meta.getCount() == 0) {
+            init(db);
+        }
 
-        meta.update(new BasicDBObject("role", "since"),
-                    new BasicDBObject("$set",
-                    new BasicDBObject("value", newSince)));
+        if (find(meta, "role", "AllDone").getBoolean("value")) {
+            init(db);
+        }
 
-        OutOfDateRepoIdentificationAlgorithm.identify(db.getCollection("repos"),
-                                                      db.getCollection("updates"),
-                                                      fetcher);
+        meta = db.getCollection("meta");
 
-        // fetch the readmes and generate a list of keywords
-        // for every repo based on the readme and description of
-        // the readme
-        ReadmeFetcher r = new ReadmeFetcher();
-        r.fetch(db.getCollection("repos"),
-                            db.getCollection("readmes"));
+        if (!find(meta, "role", "RepoUpdates").getBoolean("value"))
+            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"));
 
-        UpdateStarsAlgorithm.update(db.getCollection("updates"),
-                                    db.getCollection("stars"), fetcher);
+        BasicDBObject repoUpdates = find(meta, "role", "RepoUpdates");
+        repoUpdates.put("value", true);
 
-        CorrelationsAlgorithm.correlate(db.getCollection("stars"),
-                                        db.getCollection("repos"),
-                                        db.getCollection("scores"));
+        meta.save(repoUpdates);
+
+        if (!find(meta, "role", "StarUpdates").getBoolean("value")) {
+            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"), db.getCollection("repos"), fetcher);
+
+            for (DBObject obj : db.getCollection("repos").find()) {
+                starAlgo.consume((BasicDBObject) obj);
+            }
+
+            starAlgo.completeProcessing();
+        }
+
+        BasicDBObject starUpdates = find(meta, "role", "StarUpdates");
+        starUpdates.put("value", true);
+
+        meta.save(starUpdates);
+
+        if (!find(meta, "role", "Correlations").getBoolean("value"))
+            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"));
+
+        BasicDBObject correlations = find(meta, "role", "Correlations");
+        correlations.put("value", true);
+
+        meta.save(correlations);
+
+        BasicDBObject allDone = find(meta, "role", "AllDone");
+        allDone.put("value", true);
+
+        meta.save(allDone);
     }
 
     public void init(DB db) {
-        if (!db.collectionExists("meta")) {
-            db.createCollection("meta", null);
-            db.getCollection("meta").insert(new BasicDBObject("role", "since")
-                                            .append("value", 0));
-        }
+        db.getCollection("meta").drop();
+        db.createCollection("meta", null);
+
+        DBCollection meta = db.getCollection("meta");
+
+        meta.insert(new BasicDBObject("role", "RepoUpdates").append("value", false));
+        meta.insert(new BasicDBObject("role", "StarUpdates").append("value", false));
+        meta.insert(new BasicDBObject("role", "Correlations").append("value", false));
+        meta.insert(new BasicDBObject("role", "AllDone").append("value", false));
+    }
+
+    private BasicDBObject find(DBCollection coll, String what, String value) {
+        return ((BasicDBObject) coll.findOne(new BasicDBObject(what, value)));
     }
 }
