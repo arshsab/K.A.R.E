@@ -19,6 +19,8 @@ public class CorrelationsAlgorithm {
 
         int completed = 0;
 
+        scores.ensureIndex(new BasicDBObject("repo", 1));
+
         DBCursor repoCursor = repos.find();
         repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
 

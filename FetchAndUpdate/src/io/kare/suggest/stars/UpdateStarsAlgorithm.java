@@ -1,11 +1,7 @@
 package io.kare.suggest.stars;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import io.kare.suggest.Logger;
 import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
 
@@ -39,12 +35,15 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
         this.repos = repos;
 
         stars.ensureIndex(new BasicDBObject()
-                .append("repo", 1)
+                .append("name", 1)
                 .append("gazer", 1),
                 new BasicDBObject()
                         .append("unique", true)
                         .append("dropDups", true)
         );
+
+        stars.ensureIndex(new BasicDBObject("name", 1));
+        stars.ensureIndex(new BasicDBObject("gazer", 1));
     }
 
     @Override
@@ -52,12 +51,10 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
         final int alreadyScraped = repo.getInt("scraped_stars");
         final int totalStars = repo.getInt("gazers");
 
-        if (totalStars - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
-            exec.submit(new UpdateStarsRunnable(stars, fetcher, repo.getString("indexed_name"), 0,
-                    (int) Math.ceil((totalStars - alreadyScraped) / 100.0)));
-
-            repo.put("scraped_stars", totalStars);
-
+        if (repo.getBoolean("processable") && totalStars - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
+            exec.submit(new UpdateStarsRunnable(stars, repos, fetcher, repo));
+        } else {
+            repo.put("processable", false);
             repos.save(repo);
         }
     }

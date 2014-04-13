@@ -64,8 +64,11 @@ public class Fetcher {
         try {
             ret = http.get(fixed);
         } catch (IOException ioe) {
+            // Not found.
             if (ioe.getMessage().contains("404")) {
                 throw new FileNotFoundException();
+
+            // Out of requests.
             } else if (ioe.getMessage().contains("403")) {
                 if (isSearch) {
                     searchCanProceed.set(false);
@@ -79,11 +82,17 @@ public class Fetcher {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+
+                    Logger.debug("Waiting for API rate limit to refresh");
                 }
 
                 relinquishClaim();
                 claimRelinquished = true;
                 ret = fetch(url);
+
+            // Restricted resource.
+            } else if (ioe.getMessage().contains("422")) {
+                throw ioe;
             } else {
                 error.set(true);
                 throw ioe;
@@ -176,7 +185,6 @@ public class Fetcher {
     private boolean isSearchUrl(String url) {
         return url.startsWith("search") || url.startsWith("/search");
     }
-
 
     private String prepUrl(String url) {
         if (!url.startsWith("/")) {

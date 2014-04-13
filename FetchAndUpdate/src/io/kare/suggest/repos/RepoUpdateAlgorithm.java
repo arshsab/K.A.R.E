@@ -24,10 +24,10 @@ public class RepoUpdateAlgorithm {
     private static final int UPPER_BOUND = 100_000;
     private static final int LOWER_BOUND = 0;
 
-    public static void update(Fetcher fetcher, DBCollection repos, RepoConsumer[] consumers) throws IOException {
+    public static void update(Fetcher fetcher, DBCollection repos) throws IOException {
         Logger.important("Starting repo updates.");
 
-        repos.ensureIndex(new BasicDBObject("name", 1));
+        repos.ensureIndex(new BasicDBObject("indexed_name", 1));
         lookupTable.clear();
 
         List<Integer> ranges = new ArrayList<>();
@@ -83,6 +83,7 @@ public class RepoUpdateAlgorithm {
                     repo.put("default_branch", node.path("default_branch").textValue());
                     repo.put("language", node.path("language").textValue());
                     repo.put("owner", node.path("owner").path("login").textValue());
+                    repo.put("processable", true);
 
                     Logger.info("Inserting Repo: " + repo.get("name"));
 
@@ -90,10 +91,6 @@ public class RepoUpdateAlgorithm {
                         repos.insert(repo);
                     else
                         repos.save(repo);
-
-                    for (RepoConsumer consumer : consumers) {
-                        consumer.consume(repo);
-                    }
                 }
 
                 if (root.size() < 100) {
@@ -102,11 +99,6 @@ public class RepoUpdateAlgorithm {
             }
 
             upper = lower;
-        }
-
-
-        for (RepoConsumer consumer : consumers) {
-            consumer.completeProcessing();
         }
     }
 
