@@ -5,7 +5,7 @@ package io.kare.suggest.readmes;
  * @author Ritwik Dutta
  * @since 0.0.1
  */
-public class tagConstants {
+public class ReadmeTagConstants {
     public static final String tagWords = "c#\n" +
             "java\n" +
             "javascript\n" +

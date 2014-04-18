@@ -28,7 +28,7 @@ public class ReadmeCorrelations {
 
     private void initializeTags() {
         try {
-           for (String tag :tagConstants.tagWords.split("\n")) {
+           for (String tag : ReadmeTagConstants.tagWords.split("\n")) {
                tags.add(tag);
            }
         } catch (Throwable e) {
@@ -46,11 +46,10 @@ public class ReadmeCorrelations {
     }
 
     private double getRating(String readme1, String readme2) {
-        double total = 0.0;
         double match = 0.0;
         ArrayList<String> tags1 = (ArrayList<String>) this.getKeyWords(readme1);
         ArrayList<String> tags2 = (ArrayList<String>) this.getKeyWords(readme2);
-        total = tags1.size() + tags2.size();
+        double total = tags1.size() + tags2.size();
         for (String fTag: tags1) {
             if (tags2.contains(fTag)) {
                 match += 2;
