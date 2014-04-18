@@ -1,11 +1,5 @@
 package io.kare.suggest.readmes;
 
-import io.kare.suggest.fetch.Http;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +14,7 @@ public class ReadmeCorrelations {
 
     private static ArrayList<String> tags = new ArrayList<>();
 
+
     public List<String> getKeyWords(String readme) {
         List<String> words = Arrays.stream(removeChars(readme)).collect(Collectors.toList());
         words = words.subList(0, Math.min(words.size() - 1, 401));
@@ -32,12 +27,10 @@ public class ReadmeCorrelations {
     }
 
     private void initializeTags() {
-        // todo: fix this path so it's the right location for tags.txt
         try {
-            Arrays.stream(new Http()
-                    .get("https://raw.github.com/adrianc-a/kare/master/FetchReadme/Data/tags.txt")
-                    .split("\n"))
-                    .forEach(tags::add);
+           for (String tag : ReadmeTagConstants.tagWords.split("\n")) {
+               tags.add(tag);
+           }
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -51,4 +44,18 @@ public class ReadmeCorrelations {
                 + "+]|[<|>|**|*|-|,|=|!]", " ").replaceAll("\\s+", "    ")
                 .toLowerCase().trim().split(" ");
     }
+
+    private double getRating(String readme1, String readme2) {
+        double match = 0.0;
+        ArrayList<String> tags1 = (ArrayList<String>) this.getKeyWords(readme1);
+        ArrayList<String> tags2 = (ArrayList<String>) this.getKeyWords(readme2);
+        double total = tags1.size() + tags2.size();
+        for (String fTag: tags1) {
+            if (tags2.contains(fTag)) {
+                match += 2;
+            }
+        }
+        return match/total;
+    }
+
 }
