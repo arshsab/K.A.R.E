@@ -79,14 +79,11 @@ body {
 
 .page-header {
   opacity:	0;
+  font-size: 400%;
+  padding-top: 3%;
 	transition:	200ms linear all;
 	-webkit-transition:	200ms linear all;
 }
-
-
-/*
- * Placeholder dashboard ideas
- */
 
 .placeholders {
   margin-bottom: 30px;
@@ -103,3 +100,29 @@ body {
   border-radius: 50%;
 }
 
+.result {
+  font-size: 200%;
+  transition: 200ms linear all;
+  -webkit-transition: 200ms linear all;
+}
+
+#readme {
+  font-size: 150%;
+}
+
+h1 {
+  font-size: 200%;
+}
+
+.dir-link {
+  padding-left: 25%;
+  font-size: 100% !important;
+  display: inline;
+  float: right;
+  position: relative;
+  top: -75px;
+}
+
+.view-icon {
+  width: 125%;
+}

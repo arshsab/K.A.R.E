@@ -3740,7 +3740,8 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   float: left;
   height: 50px;
   padding: 15px 15px;
-  font-size: 18px;
+  font-size: 250%;
+  padding-top: 15%;
   line-height: 20px;
 }
 .navbar-brand:hover,
@@ -3855,7 +3856,9 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   }
   .navbar-form .form-control {
     display: inline-block;
-    width: auto;
+    width: 900px;
+    font-size: 150%;
+    height: 50px;
     vertical-align: middle;
   }
   .navbar-form .input-group > .form-control {
@@ -5783,3 +5786,6 @@ button.close {
   }
 }
 /*# sourceMappingURL=bootstrap.css.map */
+
+
+.re
