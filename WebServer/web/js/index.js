@@ -48,7 +48,6 @@ $("#search").keyup(function(event){
 
 $("#search-box").keyup(function(event){
     if(event.keyCode == 13){
-    	alert($("#search-box").val());
         window.location.href = "results.html#" + $("#search-box").val();
     }
 });
