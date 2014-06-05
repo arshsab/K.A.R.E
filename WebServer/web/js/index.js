@@ -35,3 +35,27 @@ var popRes = function(resKeys) {
 		addElem(resKeys[i]);
 	}
 };
+
+var getResult = function() {
+	window.location.href = "results.html#" + $("#search").val();
+};
+
+$("#search").keyup(function(event){
+    if(event.keyCode == 13){
+        $("#button").click();
+    }
+});
+
+$("#search-box").keyup(function(event){
+    if(event.keyCode == 13){
+    	alert($("#search-box").val());
+        window.location.href = "results.html#" + $("#search-box").val();
+    }
+});
+
+$(document).ready(function() {
+	if (window.location.hash.split("/").length > 1) {
+		var repo = window.location.hash.substring(1);
+		addElem(repo);
+	}
+});
