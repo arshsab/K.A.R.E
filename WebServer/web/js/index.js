@@ -24,6 +24,8 @@ var addElem = function(key) {
 					});
 			});
 	});
+
+	$("#" + id).animate( {"opacity": "1"}, 50);
 };
 
 var popRes = function(resKeys) {
@@ -31,6 +33,5 @@ var popRes = function(resKeys) {
 		var id = resKeys[i].split("/").join("");
 		console.log(resKeys[i]);
 		addElem(resKeys[i]);
-		$("#" + id).animate( {"opacity": "1"}, 50);
 	}
 };
