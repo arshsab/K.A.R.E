@@ -77,35 +77,6 @@ body {
   margin-top: 0;
 }
 
-.page-header {
-  opacity:	0;
-  font-size: 400%;
-  padding-top: 3%;
-	transition:	200ms linear all;
-	-webkit-transition:	200ms linear all;
-}
-
-.placeholders {
-  margin-bottom: 30px;
-  text-align: center;
-}
-.placeholders h4 {
-  margin-bottom: 0;
-}
-.placeholder {
-  margin-bottom: 20px;
-}
-.placeholder img {
-  display: inline-block;
-  border-radius: 50%;
-}
-
-.result {
-  font-size: 200%;
-  transition: 200ms linear all;
-  -webkit-transition: 200ms linear all;
-}
-
 #readme {
   font-size: 150%;
 }
@@ -121,8 +92,4 @@ h1 {
   float: right;
   position: relative;
   top: -75px;
-}
-
-.view-icon {
-  width: 125%;
 }
