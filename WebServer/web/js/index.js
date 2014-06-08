@@ -3,8 +3,8 @@ var keys = [];
 
 var addElem = function(key) {
 
-    var id = key.split("/").join("");
-    var li = '<li style = "opacity: 0;" id = "' + id + '" class = "result"><a href="#" class = "'+ id +'">' + key + '</a>'+
+    var id = key.split(".").join("").split('/').join('');
+    var li = '<li style = "opacity: 0;" data-repo="' + id +'" id = "' + id + '" class = "result"><a href="#" class = "'+ id +'">' + key + '</a>'+
     '<a class = "dir-link" href="https:/github.com/' + key +
     '"><img class = "view-icon" src = "assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
