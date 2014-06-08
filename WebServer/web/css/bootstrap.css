@@ -12,6 +12,7 @@ html {
 }
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 article,
 aside,
@@ -1119,7 +1120,7 @@ pre code {
     width: 25%;
   }
   .col-md-2 {
-    width: 16.66666667%;
+    width: 22%;
   }
   .col-md-1 {
     width: 8.33333333%;
