@@ -4,7 +4,7 @@ var keys = [];
 var addElem = function(key) {
 
     var id = key.split(".").join("").split('/').join('');
-    var li = '<li style = "opacity: 0;" data-repo="' + id +'" id = "' + id + '" class = "result"><a href="#" class = "'+ id +'">' + key + '</a>'+
+    var li = '<li class = "result" style = "opacity: 0;" data-repo="' + id +'" id = "' + id + '"><a href="#" class = "reslink '+ id +'">' + key + '</a>'+
     '<a class = "dir-link" href="https:/github.com/' + key +
     '"><img class = "view-icon" src = "assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
@@ -14,20 +14,19 @@ var addElem = function(key) {
     $("#" + id).on("click", function() {
         var text = $("." + id).text();
         console.log(text);
-        $("#readme").fadeOut(50,
+        $("#readme").fadeOut(150,
             function() {
                 var content;
                 $.get("https://api.github.com/repos/"+text +"/readme", 
                     function(e) {
-                        console.log(e);
-                        console.log(e.content);
-                        content = atob(e.content); 
-                        $("#readme").html(converter.makeHtml(content)).fadeIn(50);
+                        content = atob(e.content);
+                        $(".col-md-2").css("width", "22%");
+                        $("#readme").html(converter.makeHtml(content)).fadeIn(150);
                     });
             });
     });
 
-    $("#" +  id).animate( {"opacity": "1"}, 50);
+    $("#" +  id).animate( {"opacity": "1"}, 150);
 };
 
 var popRes = function(resKeys) {
@@ -59,7 +58,17 @@ var getParams = function() {
 };
 
 
+$(".col-md-2").hover(function() {
+    $(".col-md-2").css("width", "28%");
+    $("#readme").css("padding-left", "14%");
+}, function() {
+    $(".col-md-2").css("width", "22%");
+    $("#readme").css("padding-left", "6%");
+});
+
+
 $(document).ready(function() {
     var query = decodeURIComponent(getParams()["search"]);
-        addElem(query);
+
+    addElem(query);
 });
