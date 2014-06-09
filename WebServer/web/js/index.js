@@ -40,8 +40,8 @@ $(".col-md-2").hover(function () {
 
 
 $(document).ready(function () {
-    var query = decodeURIComponent(getParams()["search"]);
-    $.getJSON("/search?repo=" + query, function (data) {
+    var query = decodeURIComponent(getParams()["search"]).split("/");
+    $.getJSON("/searchjson?owner=" + query[0] + "&repo="  + query[1], function (data) {
         addElem(query, data);
     });
 });
