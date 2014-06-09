@@ -1120,7 +1120,14 @@ pre code {
     width: 25%;
   }
   .col-md-2 {
-    width: 22%;
+    background-color: #777;
+    width: 28%;  
+    transition: linear 150ms all;
+    -webkit-transition: linear 150ms all;
+  }
+  .col-md-2:hover {
+    transition: linear 150ms all;
+    -webkit-transition: linear 150ms all;
   }
   .col-md-1 {
     width: 8.33333333%;
@@ -4068,10 +4075,6 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .navbar-inverse .navbar-toggle .icon-bar {
   background-color: #fff;
-}
-.navbar-inverse .navbar-collapse,
-.navbar-inverse .navbar-form {
-  border-color: #101010;
 }
 .navbar-inverse .navbar-nav > .open > a,
 .navbar-inverse .navbar-nav > .open > a:hover,
