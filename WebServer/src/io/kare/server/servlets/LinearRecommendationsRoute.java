@@ -28,7 +28,6 @@ public class LinearRecommendationsRoute implements Route {
 
     {
         try {
-
             MongoClient client = new MongoClient();
             DB db = client.getDB("reco");
             recommender = new Recommender(db.getCollection("scores"), db.getCollection("repos"));
@@ -43,6 +42,8 @@ public class LinearRecommendationsRoute implements Route {
         try {
             if (request.params("owner") == null || request.params("repo") == null)
                 return null;
+
+            System.out.println("Received request for:" + request.params("owner") + "/" + request.params("repo"));
 
             String repo = request.params(":owner") + request.params(":repo");
 

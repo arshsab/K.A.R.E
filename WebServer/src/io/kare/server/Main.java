@@ -23,12 +23,13 @@ public class Main {
         else
             Spark.setPort(8081);
 
-        staticFileLocation("/web");
+        staticFileLocation("web/*");
 
-        get("/search/:repo/:owner", new FileRoute("web/results.html"));
+
+        get("/bcss", new FileRoute("web/css/bootstrap.css"));
+        get("/results.html", new FileRoute("web/results.html"));
         get("/index", new FileRoute("web/index.html"));
         get("/", new FileRoute("web/index.html"));
-
-        get("/search_json/:repo/:owner", new LinearRecommendationsRoute());
+        get("/search_json/:owner/:repo", new LinearRecommendationsRoute());
     }
 }
