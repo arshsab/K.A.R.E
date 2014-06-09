@@ -6,24 +6,20 @@ package io.kare.server.recommend;
  */
 
 public class Recommendation {
-    final String repoA, repoB;
-    final double score;
+    public final String repoA, repoB, language, description;
+    public final double score;
+    public final int gazers;
 
-    Recommendation(String repoA, String repoB, double score) {
+    Recommendation(String repoA, String repoB, String language,
+                   String description, int gazers, double score) {
+
         this.repoA = repoA;
         this.repoB = repoB;
         this.score = score;
+        this.description = description;
+        this.language = language;
+        this.gazers = gazers;
     }
 
-    public String getFirstRepo() {
-        return repoA;
-    }
 
-    public String getSecondRepo() {
-        return repoB;
-    }
-
-    public double getScore() {
-        return score;
-    }
 }

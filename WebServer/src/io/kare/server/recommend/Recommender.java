@@ -31,15 +31,19 @@ public class Recommender {
             String otherName = recommendation.getString("other");
             int score = recommendation.getInt("score");
 
-            BasicDBObject otherRepo = (BasicDBObject) repos.findOne(new BasicDBObject("name", otherName));
+            BasicDBObject otherRepo = (BasicDBObject) repos.findOne(new BasicDBObject("indexed_name", otherName));
 
             double corrected = score / Math.sqrt(otherRepo.getInt("gazers"));
 
-            ret.add(new Recommendation(repo, otherName, corrected));
+            String language = otherRepo.getString("language");
+            String description = otherRepo.getString("description");
+            int gazers = otherRepo.getInt("gazers");
+
+            ret.add(new Recommendation(repo, otherName, language, description, gazers, corrected));
         }
 
         Collections.sort(ret, (a, b) -> {
-            double attempt = a.getScore() - b.getScore();
+            double attempt = a.score - b.score;
 
             if (attempt == 0.0) {
                 return 0;
