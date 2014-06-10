@@ -1,24 +1,20 @@
 var converter = new Showdown.converter();
-var keys = [];
 
 var addElem = function (key, data) {
     var id = key.split(".").join("").split('/').join('');
-    var li = '<li class="result" style="opacity: 0;" data-repo="' + id + '" id="' + id + '"><a href="#" class="reslink ' + id + '">' + key + '</a>' +
-        '<a class = "dir-link" href="https:/github.com/' + key +
+    console.log("id: " + id);
+    var li = '<li class="result" style="opacity: 0;"' +  '" id="' + id + '">' +
+                '<a href="#" class="reslink ' + id + '">' + key + '</a>' +
+                '<a class = "dir-link" href="https:/github.com/' + key +
         '"><p>' + data.description +  '</p><p><b>lang:</b>' + data.language + '</p><p><b>stars:</b>' + data.stars +  '</p><img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
 
-    keys.push(key);
 
-    var text = $("." + id).text();
-    $.getJSON("https://api.github.com/repos/" + text + "/readme",
-        function (e) {
-            content = atob(e.content);
-            $(".col-md-2").css("width", "22%");
-            $("#readme").html(converter.makeHtml(content));
-        });
 
-    $("#" + id).animate({"opacity": "1"}, 150);
+//    $.getJSON("https://api.github.com/repos/" + key + "/readme", function (e) {
+//            var content = atob(e.content);
+//            $("#readme").html(converter.makeHtml(content));
+//   });
 };
 
 var getParams = function () {
