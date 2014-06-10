@@ -118,3 +118,6 @@ h1 {
     -webkit-transition: linear 150ms all;z
 }
 
+li {
+    color: #fff;
+}

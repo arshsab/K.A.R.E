@@ -1,11 +1,11 @@
 var converter = new Showdown.converter();
 
-var addElem = function (key, data) {
-    var id = key.split(".").join("").split('/').join('');
+var addElem = function (data) {
+    var id = data.name.split(".").join("").split('/').join('');
     console.log("id: " + id);
     var li = '<li class="result" style="opacity: 0;"' +  '" id="' + id + '">' +
-                '<a href="#" class="reslink ' + id + '">' + key + '</a>' +
-                '<a class = "dir-link" href="https:/github.com/' + key +
+                '<a href="#" class="reslink ' + id + '">' + data.name + '</a>' +
+                '<a class = "dir-link" href="https:/github.com/' + data.name +
         '"><p>' + data.description +  '</p><p><b>lang:</b>' + data.language + '</p><p><b>stars:</b>' + data.stars +  '</p><img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
 
@@ -42,7 +42,7 @@ $(document).ready(function () {
         console.log(data);
         console.log(query);
         for (var i = 0; i < data.length; i++) {
-            addElem(query, data[i]);
+            addElem(data[i]);
         }
     });
 });
