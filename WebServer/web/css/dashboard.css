@@ -115,7 +115,7 @@ h1 {
 .reslink:hover {
   color: #000000;
   transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;z
+    -webkit-transition: linear 150ms all;
 }
 
 li {
