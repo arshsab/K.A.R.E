@@ -6,6 +6,7 @@ var addElem = function (data) {
                 '<a class = "dir-link" href="https:/github.com/' + data.name +
         '"><p>' + data.description +  '</p><p><b>lang:</b>' + data.language + '</p><p><b>stars:</b>' + data.stars +  '</p><img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
+    $(".result").css("opacity", "1");
 
 
 
