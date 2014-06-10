@@ -42,7 +42,7 @@ $(document).ready(function () {
         console.log(data);
         console.log(query);
         for (var i = 0; i < data.length; i++) {
-            addElem(query, data[i]);
+            console.log(query);
         }
     });
 });
