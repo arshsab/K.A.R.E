@@ -7,7 +7,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Server server = new Server(8080);
+        Server server = new Server(args.length == 0 ? 8080 : Integer.parseInt(args[0]));
 
         ResourceHandler handler = new ResourceHandler();
         handler.setDirectoriesListed(true);

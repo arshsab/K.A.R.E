@@ -23,6 +23,9 @@ public class Recommender {
     public List<Recommendation> getLinearRecommendations(String repo) {
         List<Recommendation> ret = new ArrayList<>();
 
+        System.out.println("Getting recommendations for: " + repo);
+        System.out.printf("Recommendations have %d results.\n", scores.count(new BasicDBObject("repo", repo)));
+
         for (DBObject obj : scores.find(new BasicDBObject("repo", repo))) {
             BasicDBObject recommendation = (BasicDBObject) obj;
 
@@ -55,6 +58,8 @@ public class Recommender {
         });
 
         ret = ret.subList(0, Math.min(ret.size(), 75));
+
+        System.out.printf("Got %d results.", ret.size());
 
         return ret;
     }
