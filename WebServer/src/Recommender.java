@@ -1,5 +1,3 @@
-package io.kare.server.recommend;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;

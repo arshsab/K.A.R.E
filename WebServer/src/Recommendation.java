@@ -1,5 +1,3 @@
-package io.kare.server.recommend;
-
 /**
  * @author arshsab
  * @since 03 2014

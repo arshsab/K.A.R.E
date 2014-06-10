@@ -40,8 +40,13 @@ $(".col-md-2").hover(function () {
 
 
 $(document).ready(function () {
-    var query = decodeURIComponent(getParams()["search"]).split("/");
-    $.getJSON("/searchjson?owner=" + query[0] + "&repo="  + query[1], function (data) {
-        addElem(query, data);
+    var query = decodeURIComponent(getParams()["search"]);
+    var arr = query.split("/");
+    $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
+        console.log(data);
+        console.log(query);
+        for (var i = 0; i < data.length; i++) {
+            addElem(query, data[i]);
+        }
     });
 });
