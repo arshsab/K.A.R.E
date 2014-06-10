@@ -41,8 +41,8 @@ $(document).ready(function () {
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
         console.log(data);
         console.log(query);
-        for (var i = 1; i < data.length; i++) {
-            console.log(query);
+        for (var i = 0; i < data.length; i++) {
+            addElem(query, data[i]);
         }
     });
 });
