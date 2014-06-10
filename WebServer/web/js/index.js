@@ -1,10 +1,8 @@
 var converter = new Showdown.converter();
 
 var addElem = function (data) {
-    var id = data.name.split(".").join("").split('/').join('');
-    console.log("id: " + id);
-    var li = '<li class="result" style="opacity: 0;"' +  '" id="' + id + '">' +
-                '<a href="#" class="reslink ' + id + '">' + data.name + '</a>' +
+    var li = '<li class="result"' +  '" id="' + data.name + '">' +
+                '<a href="#" class="reslink ' + data.name + '">' + data.name + '</a>' +
                 '<a class = "dir-link" href="https:/github.com/' + data.name +
         '"><p>' + data.description +  '</p><p><b>lang:</b>' + data.language + '</p><p><b>stars:</b>' + data.stars +  '</p><img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
