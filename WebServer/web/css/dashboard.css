@@ -119,3 +119,7 @@ li {
   font-size: 65%;
   color: #FFF;
 }
+
+.dlink b {
+  padding-right: 5%;
+}
