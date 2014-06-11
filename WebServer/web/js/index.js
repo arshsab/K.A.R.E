@@ -2,12 +2,12 @@ var converter = new Showdown.converter();
 
 var addElem = function (data) {
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
-                '<a href="#" class="reslink ' + data.name + '">' + data.name + '</a>' +
-                '<a class = "dir-link" href="https:/github.com/' + data.name +
+                '<a href="#" class="reslink ' + data.name + '">' + data.name + '</a>' 
+                + data.name +
         '"><p class  = "dlink">' + data.description +  '</p><p class  = "dlink">' + 
         '<b>Languages</b>' +  data.language + 
         '</p><p class  = "dlink"><b>Stars</b>' + data.stars +  
-        '</p><img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
+        '</p><a class = "dir-link" href="https:/github.com/<img class="view-icon" src="assets/github.png" align="bottom"></a></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
 
