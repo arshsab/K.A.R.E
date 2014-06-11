@@ -35,12 +35,6 @@ $(document).ready(function () {
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
         for (var i = 0; i < data.length; i++) {
             addElem(data[i]);
-            curQuery = data[i].name.replace(/\W/g, '');
-            $.getJSON("https://api.github.com/repos/" + curQuery + "/readme", function (e) {
-                var content = atob(e.content);
-                console.log(curQuery);
-                readmeArr[curQuery] = converter.makeHtml(content);
-            });
         };
     });
 });
