@@ -5,10 +5,12 @@ var addElem = function (data) {
         '<a href="#" class="reslink">' + data.name + '</a>' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
         '""><img class="gitim" src="assets/github.png"></a>' + 
-        '<div id = "info" <p class  = "dlink">' + data.description +  
-        '</p><p class  = "dlink"><b>Languages</b>' +  data.language + 
-        '</p><p class  = "dlink"><b>Stars</b>' + data.stars +  
-        '</p></div></li>"';
+        '<div id = "info"><div class  = "dlink">' + data.description +  
+        '</div><br><br><div class  = "dlink">' + 
+        '<i class="fa fa-code"></i><b>' + data.language + 
+        '</b></div><div class  = "dlink">' +
+        '<i class="fa fa-star"></i><b>' + data.stars +  
+        '</b></div></div></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
 

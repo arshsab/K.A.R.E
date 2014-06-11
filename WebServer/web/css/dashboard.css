@@ -6,6 +6,7 @@
 body {
   padding-top: 50px;
   background-color: #EEEEEE;
+  font-family: "Lato";
 }
 
 
@@ -96,6 +97,7 @@ h1 {
 }
 
 .reslink:hover {
+  background-color: #FFFFFF !important;
   color: #000000;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
@@ -111,6 +113,16 @@ li {
 
 #info {
   padding-left: 5%;
+  width: 75%;
+  font-size: 115% !important;
+}
+
+#info b {
+  font-size: 110%;
+}
+
+.dlink {
+  display: inline;
 }
 
 .dlink b {
@@ -119,15 +131,15 @@ li {
 
 .gitim {
   position: relative;
-  top: -50px;
+  
   right: 25px;
   float: right;
   width: 10%;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
-  -webkit-border-radius: 25%;
-  -moz-border-radius: 25%;
-  border-radius: 25%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
 }
 
 .gitim:hover {
@@ -148,4 +160,18 @@ li {
   background-color: #222222 !important;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
+}
+
+
+.fa-code {
+  padding-right: 3%;
+}
+
+.fa-star {
+  padding-left: 3%;
+  padding-right: 3%; 
+}
+
+.fa {
+  font-size: 150%;
 }
