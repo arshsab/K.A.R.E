@@ -1,4 +1,5 @@
 var converter = new Showdown.converter();
+var readmeArr = [];
 
 var addElem = function (data) {
     var li = '<li class="result"' +  '" id="' + data.name + '">' + 
@@ -30,9 +31,16 @@ var getParams = function () {
 $(document).ready(function () {
     var query = decodeURIComponent(getParams()["search"]);
     var arr = query.split("/");
+    var curQuery ="";
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
         for (var i = 0; i < data.length; i++) {
             addElem(data[i]);
-        }
+            curQuery = data[i].name.replace(/\W/g, '');
+            $.getJSON("https://api.github.com/repos/" + curQuery + "/readme", function (e) {
+                var content = atob(e.content);
+                console.log(curQuery);
+                readmeArr[curQuery] = converter.makeHtml(content);
+            });
+        };
     });
 });
