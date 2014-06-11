@@ -90,13 +90,14 @@ h1 {
 }
 
 .dir-link {
-
+  color: #FFFFFF;
 }
 
 .dir-link:hover {
   background-color: #95DCF0 !important;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
+  color: #000000;
 }
 
 .reslink {
