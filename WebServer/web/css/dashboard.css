@@ -90,14 +90,7 @@ h1 {
 }
 
 .dir-link {
-  padding-left: 25%;
-  font-size: 100% !important;
-  display: inline;
-  float: right;
-  top: -50px;
-  position: relative;
-  transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;
+
 }
 
 .dir-link:hover {
