@@ -124,3 +124,7 @@ li {
 .dlink b {
   padding-right: 5%;
 }
+
+.view-icon {
+  float: right;
+}
