@@ -1,14 +1,14 @@
 var converter = new Showdown.converter();
 
 var addElem = function (data) {
-    var li = '<li class="result"' +  '" id="' + data.name + '">' +
-        '<a href="#" class="reslink ' + data.name + '">' + data.name + '</a>' 
-        + data.name + 
-        '<a class = "dir-link" href="https:/github.com/<img class="view-icon" src="assets/github.png" align="bottom"></a>' +
-        '"><p class  = "dlink">' + data.description +  '</p><p class  = "dlink">' + 
-        '<b>Languages</b>' +  data.language + 
+    var li = '<li class="result"' +  '" id="' + data.name + '">' + 
+        '<a href="#" class="reslink">' + data.name + '</a>' +
+        '<a class = "gitlink" href="https://github.com/' + data.name + 
+        '""><img class="gitim" src="assets/github.png"></a>' + 
+        '<div id = "info" <p class  = "dlink">' + data.description +  
+        '</p><p class  = "dlink"><b>Languages</b>' +  data.language + 
         '</p><p class  = "dlink"><b>Stars</b>' + data.stars +  
-        '</p></li>"';
+        '</p></div></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
 
@@ -24,15 +24,6 @@ var getParams = function () {
         return o
     }, {});
 };
-
-$(".col-md-2").hover(function () {
-    $(".col-md-2").css("width", "28%");
-    $("#readme").css("padding-left", "14%");
-}, function () {
-    $(".col-md-2").css("width", "22%");
-    $("#readme").css("padding-left", "6%");
-});
-
 
 $(document).ready(function () {
     var query = decodeURIComponent(getParams()["search"]);
