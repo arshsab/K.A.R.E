@@ -8,7 +8,7 @@ var addElem = function (data) {
         '<a href="#" class="reslink">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink">' + 
-        '<i class="fa fa-code"></i><b>' + data.language + 
+        '<i class="fa fa-angle-left"></i><i class="fa fa-angle-right"></i><b>' + data.language +
         '</b></div><div class  = "dlink">' +
         '<i class="fa fa-star"></i><b>' + data.stars +  
         '</b></div>'+
