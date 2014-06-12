@@ -31,7 +31,7 @@ var getParams = function () {
 $(document).ready(function () {
     var query = decodeURIComponent(getParams()["search"]);
     var arr = query.split("/");
-    var curQuery ="";
+    var curQuery = "";
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
         for (var i = 0; i < data.length; i++) {
             addElem(data[i]);
