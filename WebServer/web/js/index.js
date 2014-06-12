@@ -5,7 +5,7 @@ var addElem = function (data) {
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
         '""><img class="gitim" src="assets/github.png"></a>' +  
-        '<a href="#" class="reslink">' + data.name + '</a>' +
+        '<a href="#" class="reslink" id="repo-' + data.name + '">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink">' + 
         '<i class="fa fa-angle-left"></i><i class="fa fa-angle-right"></i><b>' + data.language +
@@ -15,9 +15,9 @@ var addElem = function (data) {
         '</div></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
-    $("#" + data.name).on("click", function(e) {
+    $("#repo-" + data.name).on("click", function(e) {
         $.getJSON("https://api.github.com/repos/" + data.name + "/readme", function(json) {
-            $("#" + data.name).html(converter.makeHtml(atob(json.content)));
+            $("#repo-" + data.name).html(converter.makeHtml(atob(json.content)));
         });
     });
 };
