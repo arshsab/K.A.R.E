@@ -15,10 +15,11 @@ var addElem = function (data) {
         '</div></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
-
-
-
-   
+    $("#" + data.name).on("click", function(e) {
+        $.getJSON("https://api.github.com/repos/" + data.name + "/readme", function(json) {
+            $("#" + data.name).html(converter.makeHtml(atob(json.content)));
+        });
+    });
 };
 
 var getParams = function () {
