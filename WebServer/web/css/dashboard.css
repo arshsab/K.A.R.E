@@ -97,8 +97,8 @@ h1 {
 }
 
 .reslink:hover {
-  background-color: #FFFFFF !important;
-  color: #000000;
+  background-color: #222222 !important;
+  color: #92C0CC;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
 }
@@ -143,7 +143,7 @@ li {
 }
 
 .gitim:hover {
-  background-color: #A3D0FF;
+  background-color: #92C0CC;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
 }
@@ -174,4 +174,9 @@ li {
 
 .fa {
   font-size: 150%;
+}
+
+
+.col-md-2 {
+  width:  23%;
 }
