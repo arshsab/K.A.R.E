@@ -12,7 +12,7 @@ var addElem = function (data) {
         '</b></div><div class  = "dlink dright">' +
         '<i class="fa fa-star"></i><b>' + data.stars +  
         '</b></div>'+
-        '</div></li>"';
+        '</div></li>';
     $("#results").append(li);
     $(".result").css("opacity", "1");
     $("#repo-" + data.name.replace(/\W/g, '')).on("click", function(e) {
