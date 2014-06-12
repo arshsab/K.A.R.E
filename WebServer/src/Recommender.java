@@ -26,8 +26,13 @@ public class Recommender {
         System.out.println("Getting recommendations for: " + repo);
         System.out.printf("Recommendations have %d results.\n", scores.count(new BasicDBObject("repo", repo)));
 
-        for (DBObject obj : scores.find(new BasicDBObject("repo", repo))) {
+        int i = 0;
+
+        for (DBObject obj : scores.find(new BasicDBObject("repo", repo)).sort(new BasicDBObject("score", -1))) {
             BasicDBObject recommendation = (BasicDBObject) obj;
+
+            if (i++ > 100)
+                break;
 
             String otherName = recommendation.getString("other");
             int score = recommendation.getInt("score");
@@ -57,7 +62,7 @@ public class Recommender {
             return 1;
         });
 
-        ret = ret.subList(0, Math.min(ret.size(), 75));
+        ret = ret.subList(0, Math.min(ret.size(), 25));
 
         System.out.printf("Got %d results.", ret.size());
 
