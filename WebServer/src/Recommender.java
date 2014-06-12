@@ -45,7 +45,7 @@ public class Recommender {
             String description = otherRepo.getString("description");
             int gazers = otherRepo.getInt("gazers");
 
-            ret.add(new Recommendation(repo, otherName, language, description, gazers, corrected));
+            ret.add(new Recommendation(repo, otherRepo.getString("name"), language, description, gazers, corrected));
         }
 
         Collections.sort(ret, (a, b) -> {
