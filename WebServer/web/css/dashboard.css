@@ -5,7 +5,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
   padding-top: 50px;
-  background-color: #EEEEEE;
+  background-color: #EFEFEF;
   font-family: "Lato";
 }
 
@@ -113,7 +113,7 @@ li {
 
 #info {
   padding-left: 5%;
-  width: 60%;
+  width: 85%;
   font-size: 115% !important;
 }
 
@@ -132,7 +132,7 @@ li {
 .gitim {
   float: right;
   position: relative;
-  margin-top: 5%;
+  margin-top: 35px;
   margin-right: 5%;
   width: 10%;
   transition: linear 150ms all;
@@ -163,13 +163,19 @@ li {
     -webkit-transition: linear 150ms all;
 }
 
+.fa-angle-left {
+  font-size: 125%;
+  padding-right: 2%;
+}
+
 .fa-angle-right {
+  font-size: 125%;
   padding-right: 3%;
 }
 
 .fa-star {
   padding-left: 3%;
-  padding-right: 3%; 
+  padding-right: 5%;
 }
 
 .fa {
@@ -177,5 +183,29 @@ li {
 }
 
 .col-md-2 {
-  width:  23%;
+  width:  26%;
+}
+
+#readme {
+
+  opacity: 0;
+}
+
+
+#readme li {
+  color: #000000 !important;
+    transition: linear 150ms all;
+    -webkit-transition: linear 150ms all;
+}
+
+.dlink {
+  min-width: 50% !important;
+}
+
+.dleft {
+  float: left !important;
+}
+
+.dright {
+  float: right !important;
 }
