@@ -2,16 +2,17 @@ var converter = new Showdown.converter();
 var readmeArr = [];
 
 var addElem = function (data) {
-    var li = '<li class="result"' +  '" id="' + data.name + '">' + 
-        '<a href="#" class="reslink">' + data.name + '</a>' +
+    var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
-        '""><img class="gitim" src="assets/github.png"></a>' + 
+        '""><img class="gitim" src="assets/github.png"></a>' +  
+        '<a href="#" class="reslink">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink">' + 
         '<i class="fa fa-code"></i><b>' + data.language + 
         '</b></div><div class  = "dlink">' +
         '<i class="fa fa-star"></i><b>' + data.stars +  
-        '</b></div></div></li>"';
+        '</b></div>'+
+        '</div></li>"';
     $("#results").append(li);
     $(".result").css("opacity", "1");
 

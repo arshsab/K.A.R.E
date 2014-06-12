@@ -1121,11 +1121,7 @@ pre code {
   }
   .col-md-2 {
     background-color: #777;
-    width: 23%;  
-    transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;
-  }
-  .col-md-2:hover {
+    width: 20%;  
     transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
   }

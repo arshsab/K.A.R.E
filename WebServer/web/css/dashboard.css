@@ -113,7 +113,7 @@ li {
 
 #info {
   padding-left: 5%;
-  width: 75%;
+  width: 60%;
   font-size: 115% !important;
 }
 
@@ -130,16 +130,17 @@ li {
 }
 
 .gitim {
-  position: relative;
-  
-  right: 25px;
   float: right;
+  position: relative;
+  margin-top: 5%;
+  margin-right: 5%;
   width: 10%;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
   border-radius: 50%;
+  z-index: 9001 !important;
 }
 
 .gitim:hover {
@@ -162,7 +163,6 @@ li {
     -webkit-transition: linear 150ms all;
 }
 
-
 .fa-code {
   padding-right: 3%;
 }
@@ -175,7 +175,6 @@ li {
 .fa {
   font-size: 150%;
 }
-
 
 .col-md-2 {
   width:  23%;
