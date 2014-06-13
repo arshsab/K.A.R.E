@@ -17,6 +17,7 @@ public class Main {
         ServletContextHandler sh = new ServletContextHandler();
         sh.setContextPath("/");
         sh.addServlet(RecommendationServlet.class, "/searchjson");
+        sh.addServlet(AutoCompleteServlet.class, "/auto");
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{handler, sh});
         server.setHandler(handlers);
