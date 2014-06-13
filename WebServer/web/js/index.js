@@ -5,7 +5,7 @@ var addElem = function (data) {
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
         '""><img class="gitim" src="assets/github.png"></a>' +  
-        '<a href="/results.html?search=' + encodeURIComponent(data.name) + '" class="reslink" id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
+        '<a href="#" class="reslink" id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink dleft">' + 
         '<i class="fa fa-angle-left"></i><i class="fa fa-angle-right"></i><b>' + data.language +
