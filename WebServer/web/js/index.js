@@ -5,6 +5,8 @@ var addElem = function (data) {
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
         '""><img class="gitim" src="assets/github.png"></a>' +  
+        '<a class = "searchlink" href="/results.html?search=' + 
+        encodeURIComponent(data.name) + '"><img class="gitim" src="assets/search.png"></a>' + 
         '<a href="#" class="reslink" id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink dleft">' + 
@@ -27,7 +29,7 @@ var getParams = function () {
     return document.location.search.replace(/(^\?)/, '').split('&').reduce(function (o, n) {
         n = n.split('=');
         o[n[0]] = n[1];
-        return o
+        return o;
     }, {});
 };
 

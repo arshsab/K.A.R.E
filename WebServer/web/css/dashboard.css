@@ -82,6 +82,7 @@ body {
 #readme {
   font-size: 150%;
   padding: 5%;
+  padding-left: 10%;
   transition: linear 150ms all;
   -webkit-transition: linear 150ms all;
 }
@@ -163,6 +164,21 @@ li {
     -webkit-transition: linear 150ms all;
 }
 
+.searchlink {
+  display: inline !important;
+  padding-right: 5%;
+  transition: linear 150ms all;
+    -webkit-transition: linear 150ms all;
+}
+
+.searchlink:hover {
+  color: #222222 !important;
+  background-color: #222222 !important;
+  transition: linear 150ms all;
+    -webkit-transition: linear 150ms all;
+}
+
+
 .fa-angle-left {
   font-size: 125%;
   padding-right: 2%;
@@ -187,8 +203,11 @@ li {
 }
 
 #readme {
-
   opacity: 0;
+}
+
+#readme {
+  width: 75%;
 }
 
 
