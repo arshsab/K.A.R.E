@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href='http://fonts.googleapis.com/css?family=Dosis:300,400,500,700'
-          rel='stylesheet' type='text/css'>
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/flat-ui.css" rel="stylesheet">
 </head>
@@ -23,7 +21,7 @@
             <form action="results.html" method="get" role="form">
                 <div class="form-group">
                     <label for="search" class="sr-only">Search</label>
-                    <input type="text" id="search" name="search" class="form-control"/>
+                    <input type="text" id="search-box" name="search" class="form-control"/>
                 </div>
                 <div class="form-group">
                     <label for="submit" class="sr-only">Submit</label>
@@ -33,5 +31,38 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/bloodhound.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.jquery.min.js"></script>
+<script type="text/javascript">
+        var repos = new Bloodhound({
+            datumTokenizer: function (d) {
+                return Bloodhound.tokenizers.whitespace(d.value);
+            },
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            remote: {
+                url: 'http://kare.progger.io/auto?search=%QUERY',
+                local: [{val: "jquery/jquery"}],
+                filter: function (repList) {
+                    return $.map(repList.results, function (repo) {
+                        return {
+                            value: repo;
+                        };
+                    });
+                }
+            }
+        });
+    
+        repos.initialize();
+
+        $('.typeahead').typeahead(null, {
+            displayKey: 'value',
+            source: repos.ttAdapter()
+        });
+
+</script>
+
 </body>
 </html>
