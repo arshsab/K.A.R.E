@@ -37,6 +37,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.jquery.min.js"></script>
 <script type="text/javascript">
+
         var repos = new Bloodhound({
             datumTokenizer: function (d) {
                 return Bloodhound.tokenizers.whitespace(d.value);
@@ -44,20 +45,21 @@
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             remote: {
                 url: 'http://kare.progger.io/auto?search=%QUERY',
-                local: [{val: "jquery/jquery"}],
-                filter: function (repList) {
-                    return $.map(repList.results, function (repo) {
+                filter: function (repoList) {
+                    return $.map(repoList.results, function (repo) {
                         return {
-                            value: repo;
+                            value: repo.url.substring(1)
                         };
                     });
                 }
             }
         });
-    
+
+        // initialize the bloodhound suggestion engine
         repos.initialize();
 
-        $('.typeahead').typeahead(null, {
+        // instantiate the typeahead UI
+        $('#search-box').typeahead(null, {
             displayKey: 'value',
             source: repos.ttAdapter()
         });

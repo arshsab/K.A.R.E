@@ -203,11 +203,8 @@ li {
 }
 
 #readme {
+  width: 100%;
   opacity: 0;
-}
-
-#readme {
-  width: 75%;
 }
 
 
