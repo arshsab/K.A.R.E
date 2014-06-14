@@ -1,7 +1,7 @@
 var converter = new Showdown.converter();
-var readmeArr = [];
 
 var addElem = function (data) {
+    var name = data.name.replace(/\W/g, '');
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
         '""><img class="gitim" src="assets/github.png"></a>' +  
@@ -17,13 +17,22 @@ var addElem = function (data) {
         '</div></li>';
     $("#results").append(li);
     $(".result").css("opacity", "1");
-    $("#repo-" + data.name.replace(/\W/g, '')).on("click", function(e) {
-        $.getJSON("https://api.github.com/repos/" + data.name + "/readme", function(json) {
-            $("#readme").css("opacity", "1");
-            $("#readme").html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
-        });
+    $("#repo-" + name).on("click", function() {
+        fetchReadme(date.name, name);
     });
 };
+
+function fetchReadme(repo, id) {
+    $.getJSON("https://api.github.com/repos/" + repo + "/readme", function(json) {
+        $("#readme").css("opacity", "1");
+        $("#readme").html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
+    });
+    $(id).css("color", "red");
+}
+
+/************************************
+ utils
+ ***********************************/
 
 var getParams = function () {
     return document.location.search.replace(/(^\?)/, '').split('&').reduce(function (o, n) {
@@ -33,19 +42,14 @@ var getParams = function () {
     }, {});
 };
 
-$(document).ready(function () {
-    var query = decodeURIComponent(getParams()["search"]);
-    var arr = query.split("/");
-    var curQuery = "";
-    $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
-        for (var i = 0; i < data.length; i++) {
-            addElem(data[i]);
-        };
-    });
-});
+
+
+
+/************************************
+ base64
+ ***********************************/
 
 function b64ToUint6 (nChr) {
-
     return nChr > 64 && nChr < 91 ?
         nChr - 65
         : nChr > 96 && nChr < 123 ?
@@ -58,14 +62,13 @@ function b64ToUint6 (nChr) {
         63
         :
         0;
-
 }
 
 function base64DecToArr (sBase64, nBlocksSize) {
 
-    var
-        sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
-        nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2, taBytes = new Uint8Array(nOutLen);
+    var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
+        nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) *
+            nBlocksSize : nInLen * 3 + 1 >> 2, taBytes = new Uint8Array(nOutLen);
 
     for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
         nMod4 = nInIdx & 3;
@@ -78,57 +81,18 @@ function base64DecToArr (sBase64, nBlocksSize) {
 
         }
     }
-
     return taBytes;
 }
 
-/* Base64 string to array encoding */
-
-function uint6ToB64 (nUint6) {
-
-    return nUint6 < 26 ?
-        nUint6 + 65
-        : nUint6 < 52 ?
-        nUint6 + 71
-        : nUint6 < 62 ?
-        nUint6 - 4
-        : nUint6 === 62 ?
-        43
-        : nUint6 === 63 ?
-        47
-        :
-        65;
-
-}
-
-function base64EncArr (aBytes) {
-
-    var nMod3 = 2, sB64Enc = "";
-
-    for (var nLen = aBytes.length, nUint24 = 0, nIdx = 0; nIdx < nLen; nIdx++) {
-        nMod3 = nIdx % 3;
-        if (nIdx > 0 && (nIdx * 4 / 3) % 76 === 0) { sB64Enc += "\r\n"; }
-        nUint24 |= aBytes[nIdx] << (16 >>> nMod3 & 24);
-        if (nMod3 === 2 || aBytes.length - nIdx === 1) {
-            sB64Enc += String.fromCharCode(uint6ToB64(nUint24 >>> 18 & 63), uint6ToB64(nUint24 >>> 12 & 63), uint6ToB64(nUint24 >>> 6 & 63), uint6ToB64(nUint24 & 63));
-            nUint24 = 0;
-        }
-    }
-
-    return sB64Enc.substr(0, sB64Enc.length - 2 + nMod3) + (nMod3 === 2 ? '' : nMod3 === 1 ? '=' : '==');
-
-}
-
-/* UTF-8 array to DOMString and vice versa */
-
+/**
+ * @return {string}
+ */
 function UTF8ArrToStr (aBytes) {
-
     var sView = "";
-
     for (var nPart, nLen = aBytes.length, nIdx = 0; nIdx < nLen; nIdx++) {
         nPart = aBytes[nIdx];
         sView += String.fromCharCode(
-            nPart > 251 && nPart < 254 && nIdx + 5 < nLen ? /* six bytes */
+                nPart > 251 && nPart < 254 && nIdx + 5 < nLen ? /* six bytes */
                 /* (nPart - 252 << 32) is not possible in ECMAScript! So...: */
                 (nPart - 252) * 1073741824 + (aBytes[++nIdx] - 128 << 24) + (aBytes[++nIdx] - 128 << 18) + (aBytes[++nIdx] - 128 << 12) + (aBytes[++nIdx] - 128 << 6) + aBytes[++nIdx] - 128
                 : nPart > 247 && nPart < 252 && nIdx + 4 < nLen ? /* five bytes */
@@ -143,64 +107,27 @@ function UTF8ArrToStr (aBytes) {
                 nPart
         );
     }
-
     return sView;
-
 }
 
-function strToUTF8Arr (sDOMStr) {
+/************************************
+ Start
+ ***********************************/
 
-    var aBytes, nChr, nStrLen = sDOMStr.length, nArrLen = 0;
+$(document).ready(function () {
+    var query = decodeURIComponent(getParams()["search"]);
+    document.title = query;
+    $("#search-box").html(query);
+    var arr = query.split("/");
+    $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
+        if (data === [] || data === undefined || data === null) {
+            window.location.href = "404.html";
+        } else {
+            for (var i = 0; i < data.length; i++) {
+                addElem(data[i]);
+            }
 
-    /* mapping... */
-
-    for (var nMapIdx = 0; nMapIdx < nStrLen; nMapIdx++) {
-        nChr = sDOMStr.charCodeAt(nMapIdx);
-        nArrLen += nChr < 0x80 ? 1 : nChr < 0x800 ? 2 : nChr < 0x10000 ? 3 : nChr < 0x200000 ? 4 : nChr < 0x4000000 ? 5 : 6;
-    }
-
-    aBytes = new Uint8Array(nArrLen);
-
-    /* transcription... */
-
-    for (var nIdx = 0, nChrIdx = 0; nIdx < nArrLen; nChrIdx++) {
-        nChr = sDOMStr.charCodeAt(nChrIdx);
-        if (nChr < 128) {
-            /* one byte */
-            aBytes[nIdx++] = nChr;
-        } else if (nChr < 0x800) {
-            /* two bytes */
-            aBytes[nIdx++] = 192 + (nChr >>> 6);
-            aBytes[nIdx++] = 128 + (nChr & 63);
-        } else if (nChr < 0x10000) {
-            /* three bytes */
-            aBytes[nIdx++] = 224 + (nChr >>> 12);
-            aBytes[nIdx++] = 128 + (nChr >>> 6 & 63);
-            aBytes[nIdx++] = 128 + (nChr & 63);
-        } else if (nChr < 0x200000) {
-            /* four bytes */
-            aBytes[nIdx++] = 240 + (nChr >>> 18);
-            aBytes[nIdx++] = 128 + (nChr >>> 12 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 6 & 63);
-            aBytes[nIdx++] = 128 + (nChr & 63);
-        } else if (nChr < 0x4000000) {
-            /* five bytes */
-            aBytes[nIdx++] = 248 + (nChr >>> 24);
-            aBytes[nIdx++] = 128 + (nChr >>> 18 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 12 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 6 & 63);
-            aBytes[nIdx++] = 128 + (nChr & 63);
-        } else /* if (nChr <= 0x7fffffff) */ {
-            /* six bytes */
-            aBytes[nIdx++] = 252 + /* (nChr >>> 32) is not possible in ECMAScript! So...: */ (nChr / 1073741824);
-            aBytes[nIdx++] = 128 + (nChr >>> 24 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 18 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 12 & 63);
-            aBytes[nIdx++] = 128 + (nChr >>> 6 & 63);
-            aBytes[nIdx++] = 128 + (nChr & 63);
+            fetchReadme(data[0]);
         }
-    }
-
-    return aBytes;
-
-}
+    });
+});
