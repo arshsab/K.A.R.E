@@ -18,7 +18,7 @@ var addElem = function (data) {
     $("#results").append(li);
     $(".result").css("opacity", "1");
     $("#repo-" + name).on("click", function() {
-        fetchReadme(date.name, name);
+        fetchReadme(data.name, name);
     });
 };
 
@@ -27,7 +27,11 @@ function fetchReadme(repo, id) {
         $("#readme").css("opacity", "1");
         $("#readme").html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
     });
-    $(id).css("color", "red");
+    console.log(id);
+    $(".reslink").each(function() {
+        $(this).css("color", "white");
+    });
+    $("#repo-" + id).css("color", "red");
 }
 
 /************************************
@@ -117,7 +121,7 @@ function UTF8ArrToStr (aBytes) {
 $(document).ready(function () {
     var query = decodeURIComponent(getParams()["search"]);
     document.title = query;
-    $("#search-box").html(query);
+    $("#search-box").val(query);
     var arr = query.split("/");
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
         if (data === [] || data === undefined || data === null) {
@@ -127,7 +131,7 @@ $(document).ready(function () {
                 addElem(data[i]);
             }
 
-            fetchReadme(data[0]);
+            fetchReadme(data[0].name, data[0].name.replace(/\W/g, ''));
         }
     });
 });

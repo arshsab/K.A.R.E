@@ -49,3 +49,5 @@ hs_err_pid*
 FetchAndUpdate/src/META-INF/MANIFEST.MF
 
 dependencies.zip
+
+Webserver/src/META-INF/
