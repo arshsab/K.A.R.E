@@ -46,6 +46,7 @@ public class RecommendationServlet extends HttpServlet {
 
         resp.setStatus(200);
         resp.setContentType("application/json; charset=utf-8");
+        resp.setCharacterEncoding("UTF-8");
 
         OutputStream out = new OutputStream() {
             final StringBuilder sb = new StringBuilder();
