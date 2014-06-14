@@ -124,7 +124,7 @@ $(document).ready(function () {
     $("#search-box").val(query);
     var arr = query.split("/");
     $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
-        if (data === [] || data === undefined || data === null) {
+        if (data.length === 0) {
             window.location.href = "404.html";
         } else {
             for (var i = 0; i < data.length; i++) {
