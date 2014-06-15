@@ -31,7 +31,7 @@ function fetchReadme(repo, id) {
     $(".reslink").each(function() {
         $(this).css("color", "white");
     });
-    $("#repo-" + id).css("color", "red");
+    $("#repo-" + id).css("color", "#92C0CC");
 }
 
 /************************************
