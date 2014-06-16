@@ -2,3 +2,6 @@ body, html, div.container {
     background-color: #fff;
 }
 
+a:hover {
+    text-decoration: none;
+}
