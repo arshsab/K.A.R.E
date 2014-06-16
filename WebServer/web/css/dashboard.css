@@ -85,17 +85,11 @@ h1 {
 
 .reslink {
   color: #FFFFFF;
-  transition: linear 200ms all;
-    -webkit-transition: linear 200ms all;
 }
 
 .reslink:hover {
-  background-color: #222222 !important;
   color: #6ED3FF !important;
-  transform: scale(1.05, 1.05);
-  -webkit-transform: scale(1.05, 1.05);
-  transition: linear 200ms all;
-    -webkit-transition: linear 200ms all;
+  background-color: #222222 !important;
 }
 
 li {
