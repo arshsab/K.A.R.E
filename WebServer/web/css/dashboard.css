@@ -85,6 +85,7 @@ h1 {
 
 .reslink {
   color: #FFFFFF;
+  background-color: #222222 !important;
 }
 
 .reslink:hover {
