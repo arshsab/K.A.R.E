@@ -6,7 +6,7 @@
 body {
   padding-top: 50px;
   background-color: #EFEFEF;
-  font-family: "Lato";
+  font-family: "Open Sans";
 }
 
 
@@ -79,29 +79,23 @@ body {
   margin-top: 0;
 }
 
-#readme {
-  font-size: 150%;
-  padding: 5%;
-  padding-left: 10%;
-  transition: linear 150ms all;
-  -webkit-transition: linear 150ms all;
-}
-
 h1 {
   font-size: 200%;
 }
 
 .reslink {
   color: #FFFFFF;
-  transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;
+  transition: linear 200ms all;
+    -webkit-transition: linear 200ms all;
 }
 
 .reslink:hover {
   background-color: #222222 !important;
-  color: #92C0CC;
-  transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;
+  color: #6ED3FF !important;
+  transform: scale(1.05, 1.05);
+  -webkit-transform: scale(1.05, 1.05);
+  transition: linear 200ms all;
+    -webkit-transition: linear 200ms all;
 }
 
 li {
@@ -145,7 +139,7 @@ li {
 }
 
 .gitim:hover {
-  background-color: #92C0CC;
+  background-color: #6ED3FF;
   transition: linear 150ms all;
     -webkit-transition: linear 150ms all;
 }
@@ -203,6 +197,11 @@ li {
 }
 
 #readme {
+  font-size: 150%;
+  padding: 5%;
+  padding-left: 10%;
+  transition: linear 150ms all;
+  -webkit-transition: linear 150ms all;
   width: 100%;
   opacity: 0;
 }
@@ -225,3 +224,4 @@ li {
 .dright {
   float: right !important;
 }
+

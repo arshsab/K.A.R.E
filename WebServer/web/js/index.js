@@ -23,15 +23,16 @@ var addElem = function (data) {
 };
 
 function fetchReadme(repo, id) {
+    $("#readme").css("opacity", "0");
     $.getJSON("https://api.github.com/repos/" + repo + "/readme", function(json) {
-        $("#readme").css("opacity", "1");
         $("#readme").html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
+        $("#readme").css("opacity", "1");
     });
     console.log(id);
     $(".reslink").each(function() {
-        $(this).css("color", "white");
+        $(this).css("color", "#FFFFFF");
     });
-    $("#repo-" + id).css("color", "red");
+    $("#repo-" + id).css("color", "#6ED3FF");
 }
 
 /************************************
