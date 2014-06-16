@@ -225,3 +225,30 @@ li {
   float: right !important;
 }
 
+.col-md-2 {
+    background-color: #777;
+}
+
+.sidebar {
+    background-color: #222222;
+}
+
+.navbar-brand {
+    font-size: 250%;
+    padding-top: 15%;
+}
+
+.navbar-form .form-control {
+    width: 900px;
+    font-size: 150%;
+    height: 50px;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+     border-color: rgba(0, 0, 0, 0);
+}

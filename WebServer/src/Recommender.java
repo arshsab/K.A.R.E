@@ -31,7 +31,7 @@ public class Recommender {
         for (DBObject obj : scores.find(new BasicDBObject("repo", repo)).sort(new BasicDBObject("score", -1))) {
             BasicDBObject recommendation = (BasicDBObject) obj;
 
-            if (i++ > 150)
+            if (i++ > 300)
                 break;
 
             String otherName = recommendation.getString("other");

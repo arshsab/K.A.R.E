@@ -18,6 +18,11 @@ public class Main {
                 return;
             }
 
+            MongoClient client = new MongoClient(System.getProperty("mongo.host"),
+                    Integer.parseInt(System.getProperty("mongo.port")));
+
+            DB db = client.getDB(System.getProperty("mongo.db"));
+
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("Shutting down via shutdown hook.");
                 System.out.flush();
@@ -26,14 +31,9 @@ public class Main {
 
             System.getProperties().load(new FileInputStream(args[0]));
 
-            Logger.important("Starting Kare. Version #0.0.1.");
-
-            MongoClient client = new MongoClient(System.getProperty("mongo.host"),
-                    Integer.parseInt(System.getProperty("mongo.port")));
+            Logger.important("Starting Kare. Version #1.0");
 
             Kare kare = new Kare();
-
-            DB db = client.getDB(System.getProperty("mongo.db"));
 
             Logger.important("Starting an update.");
             kare.update(db);
