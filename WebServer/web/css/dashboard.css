@@ -228,15 +228,36 @@ li {
     background-color: #222222;
 }
 
-.navbar-brand {
-    font-size: 250%;
-    padding-top: 15%;
+
+@media screen and (min-width: 378px) {
+    .navbar-brand {
+        font-size: 250%;
+        padding-top: 15%;
+    }
 }
 
 .navbar-form .form-control {
-    width: 900px;
     font-size: 150%;
     height: 50px;
+}
+
+@media screen and (min-width: 430px) {
+    .navbar-form .form-control {
+        width: 400px;
+    }
+}
+
+
+@media screen and (min-width: 800px) {
+    .navbar-form .form-control {
+        width: 600px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .navbar-form .form-control {
+        width: 800px;
+    }
 }
 
 body {

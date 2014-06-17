@@ -47,3 +47,32 @@ body {
 #abtlink {
     font-size: 125%;
 }
+
+
+.search-bar {
+    width: 300px;
+}
+
+@media screen and (min-width: 430px) {
+    .search-bar {
+        width: 400px;
+    }
+}
+
+
+@media screen and (min-width: 800px) {
+    .search-bar {
+        width: 600px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .search-bar {
+        width: 800px;
+    }
+}
+
+a:hover {
+    text-decoration: none;
+}
+
