@@ -59,12 +59,12 @@
                 filter: function (repoList) {
                     return $.map(repoList.results, function (repo) {
                         return {
-                            value: repo.url.substring(1)
+                            value: repo.name
                         };
                     });
                 }
             }
-        })
+        });
 
         repos.initialize();
 

@@ -17,14 +17,8 @@ public class RecommendationServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        try {
-            MongoClient client = new MongoClient();
-            DB db = client.getDB("kare");
-            recommender = new Recommender(db.getCollection("scores"), db.getCollection("repos"));
-
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+        DB db = (DB) getServletContext().getAttribute("db");
+        recommender = new Recommender(db.getCollection("scores"), db.getCollection("repos"));
         super.init();
     }
 

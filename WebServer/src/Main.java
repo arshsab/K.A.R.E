@@ -1,9 +1,12 @@
 
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -14,10 +17,19 @@ public class Main {
         handler.setResourceBase("web");
         handler.setWelcomeFiles(new String[]{"index.html"});
 
+        MongoClient client = new MongoClient("107.170.216.73", 27017);
+        DB db = client.getDB("kare");
+
         ServletContextHandler sh = new ServletContextHandler();
+        sh.setAttribute("db", db);
         sh.setContextPath("/");
+
+        ServletHolder auto = new ServletHolder(new AutoCompleteServlet());
+        auto.setInitOrder(2);
+
         sh.addServlet(RecommendationServlet.class, "/searchjson");
-        sh.addServlet(AutoCompleteServlet.class, "/auto");
+        sh.addServlet(auto, "/auto");
+
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{handler, sh});
         server.setHandler(handlers);
