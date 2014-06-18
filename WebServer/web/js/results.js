@@ -2,19 +2,25 @@ var converter = new Showdown.converter();
 
 var addElem = function (data) {
     var name = data.name.replace(/\W/g, '');
-    var li = '<li class="result"' +  '" id="' + data.name + '">' +
-        '<a class = "gitlink" href="https://github.com/' + data.name + 
-        '""><img class="gitim" src="../assets/github.png"></a>' +
-        '<a class = "searchlink" href="/results.html?search=' + encodeURIComponent(data.name) + '">' +
-        '<img class="gitim" src="assets/search.png"></a>' +
-        '<a href="#" class="reslink" id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
-        '<div id = "info"><div class  = "dlink">' + data.description +  
-        '</div><br><br><div class  = "dlink dleft">' + 
-        '<i class="fa fa-angle-left"></i><i class="fa fa-angle-right"></i><b>' + data.language +
-        '</b></div><div class  = "dlink dright">' +
-        '<i class="fa fa-star"></i><b>' + data.stars +  
-        '</b></div>'+
-        '</div></li>';
+    var li =
+        '<li class="result" id="' + data.name + '">' +
+            '<div class="row">' +
+                '<a class="col-xs-8 col-sm-8 col-md-8 readme-link" href="#"  id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
+                '<a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="https://github.com/' + data.name + '"><i class="fa fa-2x fa-github"></i></a>' +
+                '<a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="/results.html?search=' + encodeURIComponent(data.name) + '"><i class="fa fa-2x fa-search"></i></a>' +
+            '</div>' +
+            '<div class="row suggestion-row">' +
+                '<p class="description">' +
+                    data.description +
+                '</p>' +
+            '</div>' +
+            '<div class="row">' +
+                '<div class="logistics">' +
+                    '<div class="col-xs-6 col-sm-6 col-md-6 left-log"><i class="fa fa-lg fa-angle-left"></i>&nbsp<i class="fa fa-lg fa-angle-right"></i>&nbsp' + data.language + '</div>' +
+                    '<div class="col-xs-6 col-sm-6 col-md-6 right-log"><i class="fa fa-lg fa-star"></i>&nbsp' + data.stars + '</div>' +
+                '</div>' +
+            '</div>' +
+        '</li>';
     $("#results").append(li);
     $(".result").css("opacity", "1");
     $("#repo-" + name).on("click", function() {
@@ -23,16 +29,18 @@ var addElem = function (data) {
 };
 
 function fetchReadme(repo, id) {
-    $("#readme").css("opacity", "0");
+    var readme = $("#readme");
+
+    readme.css("opacity", "0");
     $.getJSON("https://api.github.com/repos/" + repo + "/readme", function(json) {
-        $("#readme").html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
-        $("#readme").css("opacity", "1");
+        readme.html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
+        readme.css("opacity", "1");
     });
     console.log(id);
-    $(".reslink").each(function() {
-        $(this).css("color", "#FFFFFF");
+    $(".readme-link").each(function() {
+        $(this).css("color", "#FFFFFF", 'important');
     });
-    $("#repo-" + id).css("color", "#6ED3FF");
+    $("#repo-" + id).css("color", "#6ED3FF", 'important');
 }
 
 var getParams = function () {
