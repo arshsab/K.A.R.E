@@ -193,8 +193,7 @@ li {
 
 #readme {
   font-size: 150%;
-  padding: 5%;
-  padding-left: 10%;
+  padding-left: 0%;
   transition: linear 150ms all;
   -webkit-transition: linear 150ms all;
   width: 100%;
