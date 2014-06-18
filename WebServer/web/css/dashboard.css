@@ -1,47 +1,25 @@
-/*
- * Base structure
- */
-
-/* Move down content because we have a fixed navbar that is 50px tall */
 body {
   padding-top: 50px;
   background-color: #EFEFEF;
   font-family: "Open Sans";
 }
 
-
-/*
- * Global add-ons
- */
-
 .sub-header {
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
 }
 
-
-/*
- * Sidebar
- */
-
-/* Hide for mobile, show later */
 .sidebar {
-  display: none;
-}
-@media (min-width: 768px) {
-  .sidebar {
     position: fixed;
     top: 51px;
     bottom: 0;
     left: 0;
-    z-index: 1000;
     display: block;
     padding: 20px;
     overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    overflow-y: auto;
     background-color: #222222;
     border-right: 1px solid #eee;
-  }
 }
 
 /* Sidebar navigation */
@@ -67,12 +45,6 @@ body {
 
 .main {
   padding: 20px;
-}
-@media (min-width: 768px) {
-  .main {
-    padding-right: 40px;
-    padding-left: 120px;
-  }
 }
 
 .main .page-header {
@@ -191,21 +163,24 @@ li {
   width:  26%;
 }
 
-#readme {
-  font-size: 150%;
-  padding-left: 0%;
-  transition: linear 150ms all;
-  -webkit-transition: linear 150ms all;
-  width: 100%;
-  opacity: 0;
+@media screen and (min-width: 378px) {
+    #readme {
+        font-size: 150%;
+        padding-left: 0;
+        transition: linear 150ms all;
+        -webkit-transition: linear 150ms all;
+        width: 100%;
+        opacity: 0;
+    }
+
+    #readme li {
+        color: #000000 !important;
+        transition: linear 150ms all;
+        -webkit-transition: linear 150ms all;
+    }
 }
 
 
-#readme li {
-  color: #000000 !important;
-    transition: linear 150ms all;
-    -webkit-transition: linear 150ms all;
-}
 
 .dlink {
   min-width: 50% !important;

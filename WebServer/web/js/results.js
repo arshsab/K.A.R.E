@@ -4,9 +4,9 @@ var addElem = function (data) {
     var name = data.name.replace(/\W/g, '');
     var li = '<li class="result"' +  '" id="' + data.name + '">' +
         '<a class = "gitlink" href="https://github.com/' + data.name + 
-        '""><img class="gitim" src="assets/github.png"></a>' +  
-        '<a class = "searchlink" href="/results.html?search=' + 
-        encodeURIComponent(data.name) + '"><img class="gitim" src="assets/search.png"></a>' + 
+        '""><img class="gitim" src="../assets/github.png"></a>' +
+        '<a class = "searchlink" href="/results.html?search=' + encodeURIComponent(data.name) + '">' +
+        '<img class="gitim" src="assets/search.png"></a>' +
         '<a href="#" class="reslink" id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
         '<div id = "info"><div class  = "dlink">' + data.description +  
         '</div><br><br><div class  = "dlink dleft">' + 
@@ -35,10 +35,6 @@ function fetchReadme(repo, id) {
     $("#repo-" + id).css("color", "#6ED3FF");
 }
 
-/************************************
- utils
- ***********************************/
-
 var getParams = function () {
     return document.location.search.replace(/(^\?)/, '').split('&').reduce(function (o, n) {
         n = n.split('=');
@@ -47,12 +43,7 @@ var getParams = function () {
     }, {});
 };
 
-
-
-
-/************************************
- base64
- ***********************************/
+// Base 64 functions found on the internet.
 
 function b64ToUint6 (nChr) {
     return nChr > 64 && nChr < 91 ?
@@ -89,16 +80,12 @@ function base64DecToArr (sBase64, nBlocksSize) {
     return taBytes;
 }
 
-/**
- * @return {string}
- */
 function UTF8ArrToStr (aBytes) {
     var sView = "";
     for (var nPart, nLen = aBytes.length, nIdx = 0; nIdx < nLen; nIdx++) {
         nPart = aBytes[nIdx];
         sView += String.fromCharCode(
                 nPart > 251 && nPart < 254 && nIdx + 5 < nLen ? /* six bytes */
-                /* (nPart - 252 << 32) is not possible in ECMAScript! So...: */
                 (nPart - 252) * 1073741824 + (aBytes[++nIdx] - 128 << 24) + (aBytes[++nIdx] - 128 << 18) + (aBytes[++nIdx] - 128 << 12) + (aBytes[++nIdx] - 128 << 6) + aBytes[++nIdx] - 128
                 : nPart > 247 && nPart < 252 && nIdx + 4 < nLen ? /* five bytes */
                 (nPart - 248 << 24) + (aBytes[++nIdx] - 128 << 18) + (aBytes[++nIdx] - 128 << 12) + (aBytes[++nIdx] - 128 << 6) + aBytes[++nIdx] - 128
@@ -114,10 +101,6 @@ function UTF8ArrToStr (aBytes) {
     }
     return sView;
 }
-
-/************************************
- Start
- ***********************************/
 
 $(document).ready(function () {
     var query = decodeURIComponent(getParams()["search"]);
