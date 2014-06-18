@@ -1,25 +1,33 @@
 body {
-    padding-top: 50px;
+    padding-top: 75px;
     background-color: #EFEFEF;
     font-family: "Open Sans";
 }
 
-.sub-header {
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-
 .sidebar {
-    position: fixed;
+    position: absolute;
     top: 51px;
     bottom: 0;
     left: 0;
     display: block;
     padding: 20px;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling:touch;
     background-color: #222222;
     border-right: 1px solid #eee;
+}
+
+@media screen and (min-width: 768px) {
+    .sidebar {
+        position: fixed;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        padding-top: 100px;
+    }
 }
 
 .nav-sidebar {
@@ -94,6 +102,19 @@ h1 {
     opacity: 0;
 }
 
+@media screen and (min-width: 768px) {
+    #readme {
+        visibility: visible;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #readme {
+        visibility: hidden;
+        display: none;
+    }
+}
+
 #readme li {
     color: #000000 !important;
     transition: linear 150ms all;
@@ -103,8 +124,21 @@ h1 {
     background-color: #222222;
 }
 
+@media screen and (max-width: 768px) {
+    .navbar-header {
+        float: left;
+        padding: 15px;
+        text-align: center;
+        width: 100%;
+    }
+    .navbar-brand {
+        float:none;
+        font-size: 200%;
+        padding-left: 40px;
+    }
+}
 
-@media screen and (min-width: 378px) {
+@media screen and (min-width: 768px) {
     .navbar-brand {
         font-size: 250%;
         padding-top: 15%;
@@ -112,20 +146,20 @@ h1 {
 }
 
 .navbar-form .form-control {
-    font-size: 150%;
-    height: 50px;
+    width: 100%;
 }
 
-@media screen and (min-width: 430px) {
-    .navbar-form .form-control {
-        width: 400px;
-    }
-}
+@media screen and (min-width: 300px) { .navbar-form .form-control { width: 280px; } }
+@media screen and (min-width: 350px) { .navbar-form .form-control { width: 330px; } }
+@media screen and (min-width: 400px) { .navbar-form .form-control { width: 380px; } }
+@media screen and (min-width: 500px) { .navbar-form .form-control { width: 480px; } }
+@media screen and (min-width: 600px) { .navbar-form .form-control { width: 580px; } }
 
-
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 768px) {
     .navbar-form .form-control {
-        width: 600px;
+        font-size: 150%;
+        height: 50px;
+        width: 550px;
     }
 }
 

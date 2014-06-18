@@ -16,8 +16,8 @@ var addElem = function (data) {
             '</div>' +
             '<div class="row">' +
                 '<div class="logistics">' +
-                    '<div class="col-xs-6 col-sm-6 col-md-6 left-log"><i class="fa fa-lg fa-angle-left"></i>&nbsp<i class="fa fa-lg fa-angle-right"></i>&nbsp' + data.language + '</div>' +
-                    '<div class="col-xs-6 col-sm-6 col-md-6 right-log"><i class="fa fa-lg fa-star"></i>&nbsp' + data.stars + '</div>' +
+                    '<div class="col-xs-7 col-sm-7 col-md-7 left-log"><i class="fa fa-lg fa-angle-left"></i>&nbsp<i class="fa fa-lg fa-angle-right"></i>&nbsp' + data.language + '</div>' +
+                    '<div class="col-xs-5 col-sm-5 col-md-5 right-log"><i class="fa fa-lg fa-star"></i>&nbsp' + data.stars + '</div>' +
                 '</div>' +
             '</div>' +
         '</li>';
