@@ -83,7 +83,15 @@ public class RepoUpdateAlgorithm {
                     repo.put("default_branch", node.path("default_branch").textValue());
                     repo.put("language", node.path("language").textValue());
                     repo.put("owner", node.path("owner").path("login").textValue());
-                    repo.put("processable", true);
+
+                    boolean shouldRedo  = repo.getInt("gazers") / ((double) repo.getInt("scraped_stars") + 1) > 1.035;
+
+
+                    BasicDBObject progress = new BasicDBObject();
+                    progress.put("stars_done", !shouldRedo);
+                    progress.put("correlations_done", !shouldRedo);
+
+                    repo.put("progress", progress);
 
                     Logger.info("Inserting Repo: " + repo.get("name"));
 

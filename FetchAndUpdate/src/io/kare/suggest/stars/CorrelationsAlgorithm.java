@@ -21,11 +21,29 @@ public class CorrelationsAlgorithm {
 
         scores.ensureIndex(new BasicDBObject("repo", 1));
 
+        Map<String, Integer> starCounts = new HashMap<>();
+
+        for (DBCursor cursor = repos.find(); cursor.hasNext(); ) {
+            BasicDBObject repo = (BasicDBObject) cursor.next();
+
+            starCounts.put(
+                repo.getString("indexed_name"),
+                repo.getInt("gazers")
+            );
+        }
+
         DBCursor repoCursor = repos.find();
         repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
 
         while (repoCursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) repoCursor.next();
+
+            BasicDBObject progress = (BasicDBObject) repo.get("progress");
+
+            if (progress.getBoolean("correlations_done")) {
+                ++completed;
+                continue;
+            }
 
             scores.remove(new BasicDBObject("repo", repo.getString("indexed_name")));
 
@@ -66,11 +84,13 @@ public class CorrelationsAlgorithm {
                 String otherRepo = nex.getValue();
 
                 int score = nex.getKey();
+                double adjustedScore = score / Math.sqrt(starCounts.get(otherRepo));
 
                 scores.insert(new BasicDBObject()
                         .append("repo", thisRepo)
                         .append("other", otherRepo)
                         .append("score", score)
+                        .append("adjusted_score", adjustedScore)
                 );
             }
 

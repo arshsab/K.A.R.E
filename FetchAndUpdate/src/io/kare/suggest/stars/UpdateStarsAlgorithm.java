@@ -48,14 +48,10 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
 
     @Override
     public void consume(BasicDBObject repo) throws IOException {
-        final int alreadyScraped = repo.getInt("scraped_stars");
-        final int totalStars = repo.getInt("gazers");
+        BasicDBObject obj = (BasicDBObject) repo.get("progress");
 
-        if (repo.getBoolean("processable") && totalStars - alreadyScraped >= STAR_UPDATE_THRESHOLD) {
+        if (!obj.getBoolean("stars_done")) {
             exec.submit(new UpdateStarsRunnable(stars, repos, fetcher, repo));
-        } else {
-            repo.put("processable", false);
-            repos.save(repo);
         }
     }
 

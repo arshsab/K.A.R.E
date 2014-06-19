@@ -112,7 +112,10 @@ public class UpdateStarsRunnable implements Runnable {
             }
 
             obj.put("scraped_stars", (int) stars.count(new BasicDBObject("name", repo)));
-            obj.put("processable", false);
+
+            BasicDBObject progress = (BasicDBObject) obj.get("progress");
+            progress.put("stars_done", true);
+
             repos.save(obj);
         } catch (Throwable t) {
             t.printStackTrace();
