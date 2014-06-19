@@ -17,7 +17,7 @@ public class Main {
         handler.setResourceBase("web");
         handler.setWelcomeFiles(new String[]{"index.html"});
 
-        MongoClient client = new MongoClient("107.170.216.73", 27017);
+        MongoClient client = new MongoClient();
         DB db = client.getDB("kare");
 
         ServletContextHandler sh = new ServletContextHandler();
