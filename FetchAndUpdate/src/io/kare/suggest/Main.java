@@ -1,7 +1,6 @@
 package io.kare.suggest;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 
 import java.io.FileInputStream;
 
@@ -17,19 +16,30 @@ public class Main {
                 Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
                 return;
             }
+            System.getProperties().load(new FileInputStream(args[0]));
 
             MongoClient client = new MongoClient(System.getProperty("mongo.host"),
                     Integer.parseInt(System.getProperty("mongo.port")));
 
-            DB db = client.getDB(System.getProperty("mongo.db"));
+            final DB db = client.getDB(System.getProperty("mongo.db"));
+
+            DBCollection runtime = db.getCollection("runtime");
+            BasicDBObject obj = (BasicDBObject) runtime.findOne();
+
+            if (obj == null) {
+                runtime.insert(new BasicDBObject());
+            } else {
+                Logger.important("Another process is already running. Exiting...");
+                return;
+            }
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Shutting down via shutdown hook.");
-                System.out.flush();
-                System.err.flush();
+                Logger.important("Shutting down via shutdown hook.");
+
+                DBObject atom = runtime.findOne();
+                runtime.remove(atom);
             }));
 
-            System.getProperties().load(new FileInputStream(args[0]));
 
             Logger.important("Starting Kare. Version #1.0");
 
@@ -38,12 +48,8 @@ public class Main {
             Logger.important("Starting an update.");
             kare.update(db);
             Logger.important("Completed an update. Exiting...");
-
         } catch (Throwable t) {
             t.printStackTrace();
         }
-
-        System.out.flush();
-        System.err.flush();
     }
 }
