@@ -72,19 +72,19 @@ public class CorrelationsAlgorithm {
             }
 
             // Reverse Order and allow duplicates.
-            Map<Integer, String> sorted = new TreeMap<>((a, b) -> a.equals(b) ? 1 : b - a);
+            Map<Double, String> sorted = new TreeMap<>((a, b) -> a.equals(b) ? 1 : Double.compare(b, a));
 
-            correlations.forEach((name, score) -> sorted.put(score, name));
+            correlations.forEach((name, score) -> sorted.put(score / Math.sqrt(starCounts.get(name)), name));
 
-            Iterator<Map.Entry<Integer, String>> iter = sorted.entrySet().iterator();
-            for (int i = 0; i < 1000 && iter.hasNext(); i++) {
-                Map.Entry<Integer, String> nex = iter.next();
+            Iterator<Map.Entry<Double, String>> iter = sorted.entrySet().iterator();
+            for (int i = 0; i < 100 && iter.hasNext(); i++) {
+                Map.Entry<Double, String> nex = iter.next();
 
                 String thisRepo = repo.getString("indexed_name");
                 String otherRepo = nex.getValue();
 
-                int score = nex.getKey();
-                double adjustedScore = score / Math.sqrt(starCounts.get(otherRepo));
+                int score = correlations.get(otherRepo);
+                double adjustedScore = nex.getKey();
 
                 scores.insert(new BasicDBObject()
                         .append("repo", thisRepo)
@@ -93,6 +93,9 @@ public class CorrelationsAlgorithm {
                         .append("adjusted_score", adjustedScore)
                 );
             }
+
+            progress.put("correlations_done", true);
+            repos.save(repo);
 
             Logger.info("Correlations for: #" + ++completed + " (" + repo.getString("name") + ") are done.");
         }
