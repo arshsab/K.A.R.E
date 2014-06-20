@@ -29,6 +29,8 @@ public class Fetcher {
     private final AtomicBoolean canProceed = new AtomicBoolean(true);
     private final AtomicBoolean searchCanProceed = new AtomicBoolean(true);
 
+    private String errorMessage;
+
     public Fetcher() {
         this(null);
     }
@@ -42,7 +44,7 @@ public class Fetcher {
     // Fetches the URL. Blocks if necessary until API requests are available.
     public String fetch(String url) throws IOException {
         if (error.get()) {
-            throw new IOException("500 Error has occurred. Stop the world!");
+            throw new IOException("A Stop The World error has occurred! Message: " + errorMessage);
         }
 
 
@@ -64,6 +66,8 @@ public class Fetcher {
         try {
             ret = http.get(fixed);
         } catch (IOException ioe) {
+            Logger.warn("Got an exception: " + ioe.getMessage());
+
             // Not found.
             if (ioe.getMessage().contains("404")) {
                 throw new FileNotFoundException();
@@ -95,6 +99,7 @@ public class Fetcher {
                 throw ioe;
             } else {
                 error.set(true);
+                errorMessage = ioe.getMessage();
                 throw ioe;
             }
         } finally {
