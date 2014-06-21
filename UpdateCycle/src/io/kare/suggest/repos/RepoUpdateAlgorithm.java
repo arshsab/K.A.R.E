@@ -59,7 +59,7 @@ public class RepoUpdateAlgorithm {
                         "per_page=100" +
                         "&page=" + i +
                         "&q=stars:" + lower + ".." + upper
-                ));
+                ).response);
 
                 root = root.path("items");
 
@@ -137,7 +137,7 @@ public class RepoUpdateAlgorithm {
 
         Logger.debug("Grabbing: " + num);
 
-        String json = fetcher.fetch("/search/repositories?q=stars:" + num + ".." + UPPER_BOUND);
+        String json = fetcher.fetch("/search/repositories?q=stars:" + num + ".." + UPPER_BOUND).response;
 
         JsonNode root = mapper.readTree(json);
 

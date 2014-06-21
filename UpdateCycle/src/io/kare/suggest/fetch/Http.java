@@ -1,10 +1,7 @@
 package io.kare.suggest.fetch;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.*;
 
 /**
@@ -26,7 +23,7 @@ public class Http {
         }
     }
 
-    public String get(String url) throws IOException {
+    public HttpResponse get(String url) throws IOException {
 
         HttpURLConnection conn;
         if (proxy == null) {
@@ -35,14 +32,17 @@ public class Http {
             conn = (HttpURLConnection) new URL(url).openConnection(proxy);
         }
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        int code = conn.getResponseCode();
 
-        try {
-            String data = br.lines().map(s -> s + "\n")
+        InputStream stream = code < 400 ? conn.getInputStream() : conn.getErrorStream();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
+            String data = br.lines()
+                    .map(s -> s + "\n")
                     .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
                     .toString();
 
-            return data;
+            return new HttpResponse(code, data);
         } catch (UncheckedIOException e) {
             throw e.getCause();
         }

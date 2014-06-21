@@ -42,7 +42,7 @@ public class Fetcher {
     }
 
     // Fetches the URL. Blocks if necessary until API requests are available.
-    public String fetch(String url) throws IOException {
+    public HttpResponse fetch(String url) throws IOException {
         if (error.get()) {
             throw new IOException("A Stop The World error has occurred! Message: " + errorMessage);
         }
@@ -62,18 +62,15 @@ public class Fetcher {
         claimRequest();
 
         boolean claimRelinquished = false;
-        String ret;
+        HttpResponse ret;
         try {
-            ret = http.get(fixed);
-        } catch (IOException ioe) {
-            Logger.warn("Got an exception: " + ioe.getMessage());
+            HttpResponse resp = http.get(fixed);
 
-            // Not found.
-            if (ioe.getMessage().contains("404")) {
-                throw new FileNotFoundException();
+            if (resp.responseCode != 200) {
+                Logger.warn("Unexpected response code: " + resp.responseCode + " for url: " + fixed);
+            }
 
-            // Out of requests.
-            } else if (ioe.getMessage().contains("403")) {
+            if (resp.responseCode == 403) {
                 if (isSearch) {
                     searchCanProceed.set(false);
                 } else {
@@ -93,14 +90,13 @@ public class Fetcher {
                 relinquishClaim();
                 claimRelinquished = true;
                 ret = fetch(url);
-
-            // Restricted resource.
-            } else if (ioe.getMessage().contains("422")) {
-                throw ioe;
-            } else {
+            } else if (resp.responseCode >= 500) {
                 error.set(true);
-                errorMessage = ioe.getMessage();
-                throw ioe;
+                Logger.fatal("Received a " + resp.responseCode + " error. Details: " + resp.response);
+                errorMessage = "Received a " + resp.responseCode + " error. Details: " + resp.response;
+                ret = resp;
+            } else {
+                ret = resp;
             }
         } finally {
             if (!claimRelinquished)
@@ -154,7 +150,7 @@ public class Fetcher {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey());
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey()).response;
 
         JsonNode node = mapper.readTree(rateLimit);
 
@@ -173,7 +169,7 @@ public class Fetcher {
             return true;
         }
 
-        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey());
+        String rateLimit = http.get("https://api.github.com/rate_limit?" + getApiKey()).response;
 
         JsonNode node = mapper.readTree(rateLimit);
 

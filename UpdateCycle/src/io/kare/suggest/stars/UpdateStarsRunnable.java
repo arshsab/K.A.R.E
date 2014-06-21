@@ -8,6 +8,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
 import io.kare.suggest.Logger;
 import io.kare.suggest.fetch.Fetcher;
+import io.kare.suggest.fetch.HttpResponse;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,20 +50,19 @@ public class UpdateStarsRunnable implements Runnable {
                 List<BasicDBObject> newStars = new ArrayList<>(100);
 
                 String data;
-                try {
-                    data = fetcher.fetch("repos/" + repo + "/stargazers?per_page=100&page=" + i);
-                } catch (FileNotFoundException fnfe) {
+
+                HttpResponse resp = fetcher.fetch("repos/" + repo + "/stargazers?per_page=100&page=" + i);
+                if (resp.responseCode == 200) {
+                    data = resp.response;
+                } else if (resp.responseCode == 404) {
                     Logger.warn("Could not load in repo: " + repo);
                     break;
-                } catch (IOException e) {
-                    // Happens on large repos such as bootstrap.
-                    if (e.getMessage().contains("422")) {
-                        Logger.warn("Hit the limit # of stargazers with: " + repo);
-                        break;
-                    }
-
-                    e.printStackTrace();
-                    Logger.fatal("Had a problem with getting a repo: " + e.getMessage());
+                } else if (resp.responseCode == 422) {
+                    Logger.warn("Hit the limit # of stargazers with: " + repo);
+                    break;
+                } else {
+                    Logger.fatal("Had a problem with getting a repo: " + repo +
+                            " received response code: " + resp.responseCode);
                     break;
                 }
 
