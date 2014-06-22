@@ -22,9 +22,9 @@
     </div>
     <div class="row">
         <div class="col-md-12 text-center">
-            <form action="results.html" method="get" role="form">
+            <form id="results-form" role="form">
                 <div class="form-group">
-                    <input type="text" id="search-box" id="search" name="search" class="search-bar form-control"/>
+                    <input type="text" id="search-box" name="search" class="search-bar form-control"/>
                     <input style="visibility: hidden; max-width: 0; width: 0" type="submit" />
                     <label for="search"  class="sr-only">Search</label>
                 </div>
@@ -49,7 +49,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/bloodhound.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.jquery.min.js"></script>
-<script src="js/autocomplete.js"></script>
+<script src="js/search-bar.js"></script>
 
 </body>
 </html>

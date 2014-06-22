@@ -5,7 +5,7 @@ requires = [
     'pyramid_chameleon',
     'pyramid_debugtoolbar',
     'waitress',
-    'cherrypy',
+    'cherrypy', 'pymongo',
 ]
 
 setup(name='WebServer',

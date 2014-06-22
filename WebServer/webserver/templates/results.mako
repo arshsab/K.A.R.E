@@ -12,8 +12,8 @@
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/dashboard.css" rel="stylesheet">
-    <link href="css/typeaheadjs.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/typeaheadjs.css" rel="stylesheet">
 
 
 </head>
@@ -28,7 +28,7 @@
         <div>
             <ul class="nav navbar-nav navbar-right">
             </ul>
-            <form class="navbar-form navbar-right" action="results.html" method="get">
+            <form id="results-form" class="navbar-form navbar-right">
                 <input id="search-box" type="text" class="form-control" name="search" placeholder="Search...">
                 <input style="visibility: hidden; max-width: 0; width: 0" type="submit" />
             </form>
@@ -55,11 +55,11 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-<script src="js/results.js"></script>
+<script src="/js/results.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/bloodhound.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.2/typeahead.jquery.min.js"></script>
-<script src="js/autocomplete.js"></script>
+<script src="/js/search-bar.js"></script>
 
 </body>
 </html>

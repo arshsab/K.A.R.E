@@ -20,10 +20,10 @@ def rerun_process():
 if __name__ == '__main__':
     while True:
         start = time.time()
-        proc = rerun_process()
+        rerun_process()
         end = time.time()
 
         total = ((end - start) / 3600)
         print('The process took: {0} total hours'.format(total))
 
-        time.sleep(1)
+        time.sleep(10 * 60)

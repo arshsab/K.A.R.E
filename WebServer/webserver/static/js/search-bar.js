@@ -21,3 +21,9 @@ $('#search-box').typeahead(null, {
     displayKey: 'value',
     source: repos.ttAdapter()
 });
+
+$("#results-form").submit(function() {
+    var repo = $('#search-box').val();
+    window.location.href = '/search/' + repo;
+    return false;
+});
