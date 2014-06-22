@@ -8,7 +8,7 @@ def spawn(cmd, output_file):
 def rerun_process():
     curr_time = int(time.time())
 
-    proc = spawn('/usr/bin/java -Xms256m -Xmx512m -cp FetchAndUpdate.jar io.kare.suggest.Main kare.properties'.split(),
+    proc = spawn('/usr/bin/java -Xms256m -Xmx512m -jar UpdateCycle.jar kare.properties'.split(),
                  open('logs/{0}-update'.format(curr_time), 'wb'))
 
     print('Rerunning the update cycle.')

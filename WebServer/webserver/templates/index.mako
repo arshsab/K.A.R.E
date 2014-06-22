@@ -39,7 +39,7 @@
 
 <div id="footer">
     <div style="text-align: center" class="container">
-        <a id = "abtlink" href="about.html">ABOUT</a>
+        <a id = "abtlink" href="about">ABOUT</a>
         <a style="padding-left: 10%" href="https://github.com/arshsab/K.A.R.E"><i class="fa fa-github"></i></a>
     </div>
 </div>
