@@ -48,9 +48,9 @@ def _load_names(arr, dic):
     arr.sort()
 
 
-names = []
-details = {}
-_load_names(names, details)
+_names = []
+_details = {}
+_load_names(_names, _details)
 
 print('Loaded names for autocomplete function.')
 
@@ -61,23 +61,23 @@ def render_autocomplete(request):
     if len(query) < 3:
         return {'results': []}
 
-    i = bisect.bisect_left(names, query)
+    i = bisect.bisect_left(_names, query)
 
-    if i < len(names) and names[i] < request:
+    if i < len(_names) and _names[i] < request:
         i += 1
 
     suggestions = []
 
-    while i < len(names):
-        fake = names[i]
+    while i < len(_names):
+        fake = _names[i]
 
         if not fake.startswith(query):
             break
 
-        suggestions.append(names[i])
+        suggestions.append(_names[i])
         i += 1
 
-    suggestions.sort(key=lambda suggestion: details[suggestion]['gazers'], reverse=True)
+    suggestions.sort(key=lambda suggestion: _details[suggestion]['gazers'], reverse=True)
 
     final = []
     sent = set()
@@ -85,11 +85,11 @@ def render_autocomplete(request):
     j = 0
     k = 0
     while j < 7 and k < len(suggestions):
-        if details[suggestions[k]]['name'] not in sent:
-            final.append(dict(name=details[suggestions[k]]['name']))
+        if _details[suggestions[k]]['name'] not in sent:
+            final.append(dict(name=_details[suggestions[k]]['name']))
             j += 1
 
-            sent.add(details[suggestions[k]]['name'])
+            sent.add(_details[suggestions[k]]['name'])
 
         k += 1
 
