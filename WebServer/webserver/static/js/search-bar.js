@@ -4,7 +4,7 @@ var repos = new Bloodhound({
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     remote: {
-        url: 'http://kare.progger.io/auto?search=%QUERY',
+        url: '/auto/%QUERY',
         filter: function (repoList) {
             return $.map(repoList.results, function (repo) {
                 return {

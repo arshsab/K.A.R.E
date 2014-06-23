@@ -1,57 +1,30 @@
 var converter = new Showdown.converter();
 
-var addElem = function (data) {
-    var name = data.name.replace(/\W/g, '');
-    var li =
-        '<li class="result" id="' + data.name + '">' +
-            '<div class="row">' +
-                '<a class="col-xs-8 col-sm-8 col-md-8 readme-link" href="#"  id="repo-' + data.name.replace(/\W/g, '') + '">' + data.name + '</a>' +
-                '<a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="https://github.com/' + data.name + '"><i class="fa fa-2x fa-github"></i></a>' +
-                '<a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="/results.html?search=' + encodeURIComponent(data.name) + '"><i class="fa fa-2x fa-search"></i></a>' +
-            '</div>' +
-            '<div class="row suggestion-row">' +
-                '<p class="description">' +
-                    data.description +
-                '</p>' +
-            '</div>' +
-            '<div class="row">' +
-                '<div class="logistics">' +
-                    '<div class="col-xs-7 col-sm-7 col-md-7 left-log"><i class="fa fa-lg fa-angle-left"></i>&nbsp<i class="fa fa-lg fa-angle-right"></i>&nbsp' + data.language + '</div>' +
-                    '<div class="col-xs-5 col-sm-5 col-md-5 right-log"><i class="fa fa-lg fa-star"></i>&nbsp' + data.stars + '</div>' +
-                '</div>' +
-            '</div>' +
-        '</li>';
-    $("#results").append(li);
-    $(".result").css("opacity", "1");
-    $("#repo-" + name).on("click", function() {
-        fetchReadme(data.name, name);
-    });
-};
-
-function fetchReadme(repo, id) {
+function fetchReadme(repo) {
     var readme = $("#readme");
 
     readme.css("opacity", "0");
-    $.getJSON("https://api.github.com/repos/" + repo + "/readme", function(json) {
+    $.getJSON("https://api.github.com/repos/" + repo.replace("-", "/") + "/readme", function(json) {
         readme.html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
         readme.css("opacity", "1");
     });
-    console.log(id);
+
     $(".readme-link").each(function() {
         $(this).css("color", "#FFFFFF", 'important');
     });
-    $("#repo-" + id).css("color", "#6ED3FF", 'important');
+
+    $("#" + repo).css("color", "#6ED3FF", 'important');
 }
 
-var getParams = function () {
-    return document.location.search.replace(/(^\?)/, '').split('&').reduce(function (o, n) {
-        n = n.split('=');
-        o[n[0]] = n[1];
-        return o;
-    }, {});
-};
+$(".readme-link").click(function() {
+    var repo = $(this).attr('id');
+    fetchReadme(repo);
+});
 
-// Base 64 functions found on the internet.
+$(document).ready(function() {
+    var repo = $(".readme-link").first().attr('id');
+    fetchReadme(repo);
+});
 
 function b64ToUint6 (nChr) {
     return nChr > 64 && nChr < 91 ?
@@ -69,7 +42,6 @@ function b64ToUint6 (nChr) {
 }
 
 function base64DecToArr (sBase64, nBlocksSize) {
-
     var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ""), nInLen = sB64Enc.length,
         nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) *
             nBlocksSize : nInLen * 3 + 1 >> 2, taBytes = new Uint8Array(nOutLen);
@@ -85,6 +57,7 @@ function base64DecToArr (sBase64, nBlocksSize) {
 
         }
     }
+
     return taBytes;
 }
 
@@ -109,21 +82,3 @@ function UTF8ArrToStr (aBytes) {
     }
     return sView;
 }
-
-$(document).ready(function () {
-    var query = decodeURIComponent(getParams()["search"]);
-    document.title = query;
-    $("#search-box").val(query);
-    var arr = query.split("/");
-    $.getJSON("/searchjson?owner=" + arr[0] + "&repo="  + arr[1], function (data) {
-        if (data.length === 0) {
-            window.location.href = "404.html";
-        } else {
-            for (var i = 0; i < data.length; i++) {
-                addElem(data[i]);
-            }
-
-            fetchReadme(data[0].name, data[0].name.replace(/\W/g, ''));
-        }
-    });
-});

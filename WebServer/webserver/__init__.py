@@ -16,6 +16,7 @@ def main(global_config, **settings):
     config.add_route('index', '/index')
     config.add_route('about', '/about')
     config.add_route('results', '/search/{owner}/{repo}')
+    config.add_route('autocomplete', '/auto/{query}')
     config.add_route('404', '/404')
 
     config.scan()

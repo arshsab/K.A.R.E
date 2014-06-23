@@ -23,13 +23,14 @@
 <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="index">K.A.R.E</a>
+            <a class="navbar-brand" href="/">K.A.R.E</a>
         </div>
         <div>
             <ul class="nav navbar-nav navbar-right">
+
             </ul>
             <form id="results-form" class="navbar-form navbar-right">
-                <input id="search-box" type="text" class="form-control" name="search" placeholder="Search...">
+                <input id="search-box" type="text" class="form-control" name="search" placeholder="${current_repo.name}">
                 <input style="visibility: hidden; max-width: 0; width: 0" type="submit" />
             </form>
         </div>
@@ -40,6 +41,28 @@
     <div class="row">
         <div class="col-sm-4 col-md-3 sidebar">
             <ul class="nav nav-sidebar nav-list" id="results">
+                % for recommendation in recommendations:
+                    <li class="result" id="${recommendation.name}" style="opacity: 1;">
+                        <div class="row">
+                            <a class="col-xs-8 col-sm-8 col-md-8 readme-link" href="#" id="${recommendation.name.replace("/", "-")}" style="color: rgb(255, 255, 255);">${recommendation.name}</a>
+                            <a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="https://github.com/${recommendation.name}"><i class="fa fa-2x fa-github"></i></a>
+                            <a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="/search/${recommendation.name}"><i class="fa fa-2x fa-search"></i></a>
+                        </div>
+                        <div class="row suggestion-row">
+                            <p class="description">${recommendation.description}</p>
+                        </div>
+                        <div class="row">
+                            <div class="logistics">
+                                <div class="col-xs-7 col-sm-7 col-md-7 left-log">
+                                    <i class="fa fa-lg fa-angle-left"></i>&nbsp;<i class="fa fa-lg fa-angle-right"></i>&nbsp;${recommendation.language}
+                                </div>
+                                <div class="col-xs-5 col-sm-5 col-md-5 right-log">
+                                    <i class="fa fa-lg fa-star"></i>&nbsp;${recommendation.stars}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                % endfor
             </ul>
         </div>
         <div class="col-sm-8 col-sm-offset-4 col-md-9 col-md-offset-3 main">

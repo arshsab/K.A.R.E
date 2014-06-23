@@ -25,7 +25,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12 text-center">
-            </e><h1 style="font-size: 54px; font-weight: normal; padding-top: 10%;"h><a href="/">K.A.R.E</a></h1>
+            <h1 style="font-size: 54px; font-weight: normal; padding-top: 10%;"h><a href="/">K.A.R.E</a></h1>
         </div>
     </div>
     <div class="row">
@@ -35,7 +35,7 @@
     </div>
     <div class="row">
         <div class="col-md-12" style="font-size: 18px">
-            <p>K.A.R.E stands for the Kick-Ass Recommendation Engine for Github. The project takes advantage of Githubs starring feature and API in order to understand relationships between repositories. Unfortunately, because of Github's rate limiting we were unable to get all of Github's repos. Instead we scrape repos above 50 stars (Roughly 60,000 repos in total). If a repo is not on here it is likely because it has not been scraped yet or it does not meet the minimum threshold for being scraped. </p>
+            <p>K.A.R.E stands for the Kick-Ass Recommendation Engine for Github. The project takes advantage of Githubs starring feature and API in order to understand relationships between repositories and recommend repositories to users. Unfortunately, because of Github's rate limiting we were unable to get all of Github's repos. Instead our program has scraped the top ${repo_count} repos. If a repo is not on here it is likely because it has not been scraped yet or it does not meet the minimum threshold for being scraped. </p>
         </div>
     </div>
     <div class="row">

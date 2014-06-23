@@ -81,6 +81,6 @@
 	<div id = "back"></div>
     <div id = "text"><h1>ALL YOUR REPOS ARE <i><b>NOT</b></i> &nbsp; BELONG TO US</h1>
     <p>The repo that you tried to find is either not valid, has too few stars for us to make useful recommendations, or we have not scraped it yet.
-    <br><br><i class="fa fa-frown-o"></i><br><br><a href="/">Click here to return to the home page.</a></p><div>
+    <br><br><i class="fa fa-frown-o"></i><br><br><a href="/">Click here to return to the home page.</a></p>
 </body>
 </html>
