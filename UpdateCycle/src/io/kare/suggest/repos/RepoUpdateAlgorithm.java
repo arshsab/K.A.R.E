@@ -24,7 +24,7 @@ public class RepoUpdateAlgorithm {
     private static final int UPPER_BOUND = 100_000;
     private static final int LOWER_BOUND = 0;
 
-    public static void update(Fetcher fetcher, DBCollection repos) throws IOException {
+    public static void update(Fetcher fetcher, DBCollection repos, DBCollection meta) throws IOException {
         Logger.important("Starting repo updates.");
 
         repos.ensureIndex(new BasicDBObject("indexed_name", 1));
@@ -49,6 +49,8 @@ public class RepoUpdateAlgorithm {
 
             n += 1000;
         }
+
+        int redos = 0;
 
         int upper = UPPER_BOUND;
         for (int lower : ranges) {
@@ -86,6 +88,7 @@ public class RepoUpdateAlgorithm {
 
                     boolean shouldRedo  = repo.getInt("gazers") / ((double) repo.getInt("scraped_stars") + 1) > 1.035;
 
+                    if (shouldRedo) ++redos;
 
                     BasicDBObject progress = new BasicDBObject();
                     progress.put("stars_done", !shouldRedo);
@@ -108,6 +111,10 @@ public class RepoUpdateAlgorithm {
 
             upper = lower;
         }
+
+        BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "redos"));
+        obj.put("value", redos);
+        meta.save(obj);
     }
 
     private static int binSearch(int num, Fetcher fetcher) throws IOException {

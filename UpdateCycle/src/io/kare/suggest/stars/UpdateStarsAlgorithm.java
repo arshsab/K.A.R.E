@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author arshsab
@@ -25,21 +26,25 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
     }
 
     private final DBCollection stars;
+    private final DBCollection repos;
+    private final DBCollection meta;
     private final Fetcher fetcher;
     private final ExecutorService exec = Executors.newFixedThreadPool(8);
-    private final DBCollection repos;
+    private final AtomicInteger atom = new AtomicInteger(0);
 
-    public UpdateStarsAlgorithm(DBCollection stars, DBCollection repos, Fetcher fetcher) {
-        this.stars = stars;
+    public UpdateStarsAlgorithm(DBCollection stars, DBCollection repos, DBCollection meta, Fetcher fetcher) {
         this.fetcher = fetcher;
+        this.stars = stars;
         this.repos = repos;
+        this.meta = meta;
 
-        stars.ensureIndex(new BasicDBObject()
+        stars.ensureIndex(
+            new BasicDBObject()
                 .append("name", 1)
                 .append("gazer", 1),
-                new BasicDBObject()
-                        .append("unique", true)
-                        .append("dropDups", true)
+            new BasicDBObject()
+                .append("unique", true)
+                .append("dropDups", true)
         );
 
         stars.ensureIndex(new BasicDBObject("name", 1));
@@ -51,7 +56,7 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
         BasicDBObject obj = (BasicDBObject) repo.get("progress");
 
         if (!obj.getBoolean("stars_done")) {
-            exec.submit(new UpdateStarsRunnable(stars, repos, fetcher, repo));
+            exec.submit(new UpdateStarsRunnable(stars, repos, meta, atom, fetcher, repo));
         }
     }
 

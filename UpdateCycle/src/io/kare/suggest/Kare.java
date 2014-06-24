@@ -41,48 +41,61 @@ public class Kare {
 
         DBCollection meta = db.getCollection("meta");
 
+        String version = System.getProperty("kare.version");
+
         if (meta.getCount() == 0) {
             init(db);
-        }
+        } else if (find(meta, "role", "version") == null ||
+                !find(meta, "role", "version").getString("value").equals(version)) {
 
-        if (find(meta, "role", "AllDone").getBoolean("value")) {
             init(db);
+        } else if (find(meta, "role", "done").getBoolean("value")) {
+            init(db);
+        } else {
+            BasicDBObject obj = find(meta, "role", "crashes");
+
+            int prev = obj.getInt("value");
+
+            obj.put("value", prev + 1);
+
+            meta.save(obj);
         }
 
-        meta = db.getCollection("meta");
+        if (find(meta, "role", "current_task").getString("value").equals("repo_updates")) {
+            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), meta);
 
-        if (!find(meta, "role", "RepoUpdates").getBoolean("value"))
-            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"));
+            BasicDBObject task = find(meta, "role", "current_task");
+            task.put("value", "star_updates");
 
-        BasicDBObject repoUpdates = find(meta, "role", "RepoUpdates");
-        repoUpdates.put("value", true);
+            meta.save(task);
+        }
 
-        meta.save(repoUpdates);
-
-        if (!find(meta, "role", "StarUpdates").getBoolean("value")) {
-            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"), db.getCollection("repos"), fetcher);
+        if (find(meta, "role", "current_task").getString("value").equals("star_updates")) {
+            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"),
+                    db.getCollection("repos"),  db.getCollection("meta"), fetcher);
 
             for (DBObject obj : db.getCollection("repos").find()) {
                 starAlgo.consume((BasicDBObject) obj);
             }
 
             starAlgo.completeProcessing();
+
+            BasicDBObject task = find(meta, "role", "current_task");
+            task.put("value", "correlation_updates");
+
+            meta.save(task);
         }
 
-        BasicDBObject starUpdates = find(meta, "role", "StarUpdates");
-        starUpdates.put("value", true);
+        if (find(meta, "role", "current_task").getString("value").equals("correlation_updates")) {
+            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"), meta);
 
-        meta.save(starUpdates);
+            BasicDBObject task = find(meta, "role", "current_task");
+            task.put("value", "cleanup");
 
-        if (!find(meta, "role", "Correlations").getBoolean("value"))
-            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"));
+            meta.save(task);
+        }
 
-        BasicDBObject correlations = find(meta, "role", "Correlations");
-        correlations.put("value", true);
-
-        meta.save(correlations);
-
-        BasicDBObject allDone = find(meta, "role", "AllDone");
+        BasicDBObject allDone = find(meta, "role", "done");
         allDone.put("value", true);
 
         meta.save(allDone);
@@ -94,10 +107,14 @@ public class Kare {
 
         DBCollection meta = db.getCollection("meta");
 
-        meta.insert(new BasicDBObject("role", "RepoUpdates").append("value", false));
-        meta.insert(new BasicDBObject("role", "StarUpdates").append("value", false));
-        meta.insert(new BasicDBObject("role", "Correlations").append("value", false));
-        meta.insert(new BasicDBObject("role", "AllDone").append("value", false));
+        meta.insert(new BasicDBObject("role", "current_task").append("value", "setup"));
+        meta.insert(new BasicDBObject("role", "version").append("value", "1.0"));
+        meta.insert(new BasicDBObject("role", "redos").append("value", 0));
+        meta.insert(new BasicDBObject("role", "stars_done").append("value", 0));
+        meta.insert(new BasicDBObject("role", "correlations_done").append("value", 0));
+        meta.insert(new BasicDBObject("role", "done").append("value", false));
+        meta.insert(new BasicDBObject("role", "crashes").append("value", 0));
+        meta.insert(new BasicDBObject("role", "version").append("value", System.getProperty("kare.version")));
     }
 
     private BasicDBObject find(DBCollection coll, String what, String value) {

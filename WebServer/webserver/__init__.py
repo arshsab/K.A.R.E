@@ -18,6 +18,7 @@ def main(global_config, **settings):
     config.add_route('results', '/search/{owner}/{repo}')
     config.add_route('autocomplete', '/auto/{query}')
     config.add_route('404', '/404')
+    config.add_route('statistics', '/statistics')
 
     config.scan()
     return config.make_wsgi_app()

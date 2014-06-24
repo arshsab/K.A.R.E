@@ -10,6 +10,6 @@ def setup_mongo():
     client = MongoClient()
     db = client.kare
 
-    return db.scores, db.stars, db.repos
+    return db.scores, db.stars, db.repos, db.meta, db
 
-scores, stars, repos = setup_mongo()
+scores, stars, repos, meta, db = setup_mongo()

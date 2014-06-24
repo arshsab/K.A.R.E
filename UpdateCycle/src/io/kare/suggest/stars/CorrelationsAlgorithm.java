@@ -14,7 +14,7 @@ import java.util.TreeMap;
  */
 
 public class CorrelationsAlgorithm {
-    public static void correlate(DBCollection stars, DBCollection repos, DBCollection scores) {
+    public static void correlate(DBCollection stars, DBCollection repos, DBCollection scores, DBCollection meta) {
         Logger.important("Rebuilding correlations for repos that need updates.");
 
         int completed = 0;
@@ -32,7 +32,7 @@ public class CorrelationsAlgorithm {
             );
         }
 
-        DBCursor repoCursor = repos.find();
+        DBCursor repoCursor = repos.find(new BasicDBObject("gazers", 1));
         repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
 
         while (repoCursor.hasNext()) {
@@ -41,7 +41,6 @@ public class CorrelationsAlgorithm {
             BasicDBObject progress = (BasicDBObject) repo.get("progress");
 
             if (progress.getBoolean("correlations_done")) {
-                ++completed;
                 continue;
             }
 
@@ -97,7 +96,11 @@ public class CorrelationsAlgorithm {
             progress.put("correlations_done", true);
             repos.save(repo);
 
-            Logger.info("Correlations for: #" + ++completed + " (" + repo.getString("name") + ") are done.");
+            BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "correlations_done"));
+            obj.put("value", ++completed);
+            meta.save(obj);
+
+            Logger.info("Correlations for: #" + completed + " (" + repo.getString("name") + ") are done.");
         }
         
         Logger.important("Finished rebuilding correlations for repos that needed update.");

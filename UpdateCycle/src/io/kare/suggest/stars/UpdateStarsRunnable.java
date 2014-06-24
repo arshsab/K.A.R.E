@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author arshsab
@@ -23,16 +24,22 @@ import java.util.List;
 public class UpdateStarsRunnable implements Runnable {
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private final AtomicInteger atom;
     private final DBCollection stars;
-    private final String repo;
-    private final BasicDBObject obj;
     private final DBCollection repos;
+    private final DBCollection meta;
+    private final BasicDBObject obj;
     private final Fetcher fetcher;
+    private final String repo;
 
-    public UpdateStarsRunnable(DBCollection stars, DBCollection repos, Fetcher fetcher, BasicDBObject obj) {
+    public UpdateStarsRunnable(DBCollection stars, DBCollection repos, DBCollection meta,
+                                    AtomicInteger atom, Fetcher fetcher, BasicDBObject obj) {
+
         this.stars = stars;
-        this.obj = obj;
         this.repos = repos;
+        this.meta = meta;
+        this.atom = atom;
+        this.obj = obj;
         this.repo = obj.getString("indexed_name");
         this.fetcher = fetcher;
     }
@@ -117,6 +124,10 @@ public class UpdateStarsRunnable implements Runnable {
             progress.put("stars_done", true);
 
             repos.save(obj);
+
+            BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "stars_done"));
+            obj.put("value", atom.incrementAndGet());
+            meta.save(obj);
         } catch (Throwable t) {
             t.printStackTrace();
         }
