@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>About the team</title>
+    <title>Status Page</title>
 
     <!-- Bootstrap -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
@@ -40,10 +40,12 @@
     </div>
     <div class="col-md-12" style="font-size: 18px;">
         <div class="row">
-            Repos Found: <span style="font-family: monospace">${repos_count}</span><br>
-            Stars Scraped: <span style="font-family: monospace">${stars_count}</span><br>
-            Relationships Built: <span style="font-family: monospace">${scores_count}</span><br>
-            Total size in GB: <span style="font-family: monospace">${gigabytes}</span><br>
+            <ul>
+                <li>Repos Found: <span style="font-family: monospace">${repos_count}</span></li>
+                <li>Stars Scraped: <span style="font-family: monospace">${stars_count}</span></li>
+                <li>Relationships Built: <span style="font-family: monospace">${scores_count}</span></li>
+                <li>Total size in GB: <span style="font-family: monospace">${gigabytes}</span></li>
+            </ul>
         </div>
     </div>
     <div class="row">
