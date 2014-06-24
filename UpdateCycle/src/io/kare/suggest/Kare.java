@@ -102,12 +102,14 @@ public class Kare {
     }
 
     public void init(DB db) {
+        Logger.important("Resetting DB's update info.");
+
         db.getCollection("meta").drop();
         db.createCollection("meta", null);
 
         DBCollection meta = db.getCollection("meta");
 
-        meta.insert(new BasicDBObject("role", "current_task").append("value", "setup"));
+        meta.insert(new BasicDBObject("role", "current_task").append("value", "repo_updates"));
         meta.insert(new BasicDBObject("role", "version").append("value", "1.0"));
         meta.insert(new BasicDBObject("role", "redos").append("value", 0));
         meta.insert(new BasicDBObject("role", "stars_done").append("value", 0));

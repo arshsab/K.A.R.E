@@ -86,7 +86,7 @@ public class RepoUpdateAlgorithm {
                     repo.put("language", node.path("language").textValue());
                     repo.put("owner", node.path("owner").path("login").textValue());
 
-                    boolean shouldRedo  = repo.getInt("gazers") / ((double) repo.getInt("scraped_stars") + 1) > 1.035;
+                    boolean shouldRedo  = repo.getInt("gazers") / ((double) Math.max(repo.getInt("scraped_stars"), 1)) > 1.075;
 
                     if (shouldRedo) ++redos;
 

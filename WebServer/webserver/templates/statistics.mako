@@ -41,10 +41,10 @@
     <div class="col-md-12" style="font-size: 18px;">
         <div class="row">
             <ul>
-                <li>Repos Found: <span style="font-family: monospace">${repos_count}</span></li>
-                <li>Stars Scraped: <span style="font-family: monospace">${stars_count}</span></li>
-                <li>Relationships Built: <span style="font-family: monospace">${scores_count}</span></li>
-                <li>Total size in GB: <span style="font-family: monospace">${gigabytes}</span></li>
+                <li>Repos Found: <span style="font-family: monospace">${str(repos_count)}</span></li>
+                <li>Stars Scraped: <span style="font-family: monospace">${str(stars_count)}</span></li>
+                <li>Relationships Built: <span style="font-family: monospace">${str(scores_count)}</span></li>
+                <li>Total size in GB: <span style="font-family: monospace">${str(gigabytes)}</span></li>
             </ul>
         </div>
     </div>
@@ -60,7 +60,7 @@
     </div>
     <div class="statistics col-md-12" style="font-size: 18px; font-family: monospace">
         <div class="row reports">
-            The program has had: <b>${crashes}</b> errors in this cycle.<br>
+            The program has had: <b>${str(crashes)}</b> errors in this cycle.<br>
             % for i in [1]:
                 % if current_task == 'setup':
                     Setting up for an update cycle.<br>
@@ -73,18 +73,18 @@
                     In progress: Finding new and out of date repos.<br>
                     <% break %>
                 % else:
-                    Finished finding a total of <b>${redos}</b> repos to update.<br>
+                    Finished finding a total of <b>${str(redos)}</b> repos to update.<br>
                 % endif
 
                 % if current_task == 'star_updates':
-                    In Progress: Finding <b>${stars_done}</b> / <b>${redos}</b> new and out of date repos.<br>
+                    In Progress: Finding <b>${str(stars_done)}</b> / <b>${str(redos)}</b> new and out of date repos.<br>
                     <% break %>
                 % else:
                     Finished updating all of the stars.<br>
                 % endif
 
                 % if current_task == 'correlation_updates':
-                    In Progress: Building correlations for <b>${correlations_done}</b> / <b>${redo}</b> new and out of date repos.<br>
+                    In Progress: Building correlations for <b>${str(correlations_done)}</b> / <b>${str(redo)}</b> new and out of date repos.<br>
                     <% break %>
                 % else:
                     Finished updating all of the stars.<br>

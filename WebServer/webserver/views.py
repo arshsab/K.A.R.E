@@ -88,7 +88,7 @@ def render_autocomplete(request):
 
     i = bisect.bisect_left(_names, query)
 
-    if i < len(_names) and _names[i] < request:
+    if i < len(_names) and _names[i] < query:
         i += 1
 
     suggestions = []

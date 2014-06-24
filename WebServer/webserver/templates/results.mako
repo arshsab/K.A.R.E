@@ -57,7 +57,7 @@
                                     <i class="fa fa-lg fa-angle-left"></i>&nbsp;<i class="fa fa-lg fa-angle-right"></i>&nbsp;${recommendation.language}
                                 </div>
                                 <div class="col-xs-5 col-sm-5 col-md-5 right-log">
-                                    <i class="fa fa-lg fa-star"></i>&nbsp;${recommendation.stars}
+                                    <i class="fa fa-lg fa-star"></i>&nbsp;${str(recommendation.stars)}
                                 </div>
                             </div>
                         </div>

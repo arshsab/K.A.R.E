@@ -22,26 +22,3 @@ def main(global_config, **settings):
 
     config.scan()
     return config.make_wsgi_app()
-
-if __name__ == '__main__':
-    isdev = sys.argv[1] == "dev"
-
-    ini = None
-    port = None
-
-    if isdev:
-        ini = 'development.ini'
-        port = 8080
-    else:
-        ini = 'production.ini'
-        port = 80
-
-    print("Setting up the server in {0} mode.".format(sys.argv[1]))
-
-    app = get_app(ini)
-    server = CherryPyWSGIServer(('0.0.0.0', port), app)
-
-    try:
-        server.start()
-    finally:
-        server.stop()

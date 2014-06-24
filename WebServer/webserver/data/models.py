@@ -13,6 +13,9 @@ class Repo:
                 language = repo['language']
                 description = repo['description']
 
+        if language is None:
+            language = ''
+
         self.name = repo_name
         self.stars = star_count
         self.language = language
