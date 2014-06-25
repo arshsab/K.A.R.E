@@ -1,10 +1,7 @@
 package io.kare.suggest;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
+import com.mongodb.*;
 
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.repos.RepoUpdateAlgorithm;
 import io.kare.suggest.stars.CorrelationsAlgorithm;
@@ -67,7 +64,7 @@ public class Kare {
             BasicDBObject task = find(meta, "role", "current_task");
             task.put("value", "star_updates");
 
-            meta.save(task);
+            meta.save(task, WriteConcern.JOURNALED);
         }
 
         if (find(meta, "role", "current_task").getString("value").equals("star_updates")) {
@@ -83,7 +80,7 @@ public class Kare {
             BasicDBObject task = find(meta, "role", "current_task");
             task.put("value", "correlation_updates");
 
-            meta.save(task);
+            meta.save(task, WriteConcern.JOURNALED);
         }
 
         if (find(meta, "role", "current_task").getString("value").equals("correlation_updates")) {
@@ -92,7 +89,7 @@ public class Kare {
             BasicDBObject task = find(meta, "role", "current_task");
             task.put("value", "cleanup");
 
-            meta.save(task);
+            meta.save(task, WriteConcern.JOURNALED);
         }
 
         BasicDBObject allDone = find(meta, "role", "done");

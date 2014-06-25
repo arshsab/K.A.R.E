@@ -32,8 +32,12 @@ public class CorrelationsAlgorithm {
             );
         }
 
-        DBCursor repoCursor = repos.find(new BasicDBObject("gazers", 1));
+        Logger.important("Established Star Counts");
+
+        DBCursor repoCursor = repos.find().sort(new BasicDBObject("gazers", 1));
         repoCursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+
+        Logger.important(repoCursor.size() + "");
 
         while (repoCursor.hasNext()) {
             BasicDBObject repo = (BasicDBObject) repoCursor.next();

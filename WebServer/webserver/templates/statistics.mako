@@ -77,14 +77,14 @@
                 % endif
 
                 % if current_task == 'star_updates':
-                    In Progress: Finding <b>${str(stars_done)}</b> / <b>${str(redos)}</b> new and out of date repos.<br>
+                    In Progress: Found stars for <b>${str(stars_done)}</b> / <b>${str(redos)}</b> new and out of date repos.<br>
                     <% break %>
                 % else:
                     Finished updating all of the stars.<br>
                 % endif
 
                 % if current_task == 'correlation_updates':
-                    In Progress: Building correlations for <b>${str(correlations_done)}</b> / <b>${str(redo)}</b> new and out of date repos.<br>
+                    In Progress: Building correlations for <b>${str(correlations_done)}</b> / <b>${str(redos)}</b> new and out of date repos.<br>
                     <% break %>
                 % else:
                     Finished updating all of the stars.<br>
