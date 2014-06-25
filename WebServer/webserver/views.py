@@ -1,4 +1,5 @@
 import bisect
+import urllib.parse
 from pyramid.view import view_config
 from data import repos, meta, stars, scores, db
 from .data.models import Repo
@@ -81,7 +82,7 @@ def render_results(request):
 
 @view_config(route_name='autocomplete', renderer='json')
 def render_autocomplete(request):
-    query = request.matchdict['query']
+    query = urllib.parse.unquote(request.matchdict['query'])
 
     if len(query) < 3:
         return {'results': []}
