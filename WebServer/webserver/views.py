@@ -72,6 +72,7 @@ def render_results(request):
     repo = request.matchdict['repo']
 
     full_name = owner + '/' + repo
+    full_name = full_name.lower()
 
     recommender = SimpleRecommender()
     recommendations = recommender.recommendations_for(full_name)
@@ -83,6 +84,8 @@ def render_results(request):
 @view_config(route_name='autocomplete', renderer='json')
 def render_autocomplete(request):
     query = urllib.parse.unquote(request.matchdict['query'])
+
+    query = query.lower()
 
     if len(query) < 3:
         return {'results': []}

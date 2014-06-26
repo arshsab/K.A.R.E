@@ -4,7 +4,7 @@ function fetchReadme(repo) {
     var readme = $("#readme");
 
     readme.css("opacity", "0");
-    $.getJSON("https://api.github.com/repos/" + repo.replace("-", "/") + "/readme", function(json) {
+    $.getJSON("https://api.github.com/repos/" + repo.replace("*", "/") + "/readme", function(json) {
         readme.html(converter.makeHtml(UTF8ArrToStr(base64DecToArr(json.content))));
         readme.css("opacity", "1");
     });

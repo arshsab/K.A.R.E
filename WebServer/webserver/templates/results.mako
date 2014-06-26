@@ -44,7 +44,7 @@
                 % for recommendation in recommendations:
                     <li class="result" id="${recommendation.name}" style="opacity: 1;">
                         <div class="row">
-                            <a class="col-xs-8 col-sm-8 col-md-8 readme-link" href="#" id="${recommendation.name.replace("/", "-")}" style="color: rgb(255, 255, 255);">${recommendation.name}</a>
+                            <a class="col-xs-8 col-sm-8 col-md-8 readme-link" href="#" id="${recommendation.name.replace("/", "*")}" style="color: rgb(255, 255, 255);">${recommendation.name}</a>
                             <a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="https://github.com/${recommendation.name}"><i class="fa fa-2x fa-github"></i></a>
                             <a class="col-xs-2 col-sm-2 col-md-2 icon-link" href="/search/${recommendation.name}"><i class="fa fa-2x fa-search"></i></a>
                         </div>
