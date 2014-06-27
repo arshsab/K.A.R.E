@@ -10,6 +10,7 @@
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/about.css"/>
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/epoch/0.5.2/epoch.min.css" rel="stylesheet">
 
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -97,10 +98,25 @@
             % endfor
         </div>
     </div>
-</div>
+    <div class="row">
+        <div class="col-md-12">
+            <!-- not sure if it needs an explicit height and width -->
+            <!-- needs to have: data-time -->
+            <div id="update-cycle-time"> </div>
+        </div>
+    </div>
+    <div class="row">
+            <div class="col-md-12">
+                <!-- needs to have: data-info, data-stars, data-correlations -->
+                <div id="repos-time"> </div>
+            </div>
+        </div>
+    </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/epoch/0.5.2/epoch.min.js"></script>
 </body>
 </html>
