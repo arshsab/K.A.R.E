@@ -1,4 +1,4 @@
-(function main(window, document, undefined) {
+(function (window, document, undefined) {
     document.addEventListener('DOMContentLoaded', function() {
         /**
          * This data must be formatted as such:
