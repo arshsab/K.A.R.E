@@ -13,7 +13,7 @@ function fetchReadme(repo) {
         $(this).css("color", "#FFFFFF", 'important');
     });
 
-    $("#" + repo).css("color", "#6ED3FF", 'important');
+    $("#" + repo.replace("*", "/")).css("color", "#6ED3FF", 'important');
 }
 
 $(".readme-link").click(function() {

@@ -2,6 +2,7 @@ package io.kare.suggest.stars;
 
 import com.mongodb.*;
 import io.kare.suggest.Logger;
+import io.kare.suggest.statistic.IncrementedStatistic;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,7 +15,9 @@ import java.util.TreeMap;
  */
 
 public class CorrelationsAlgorithm {
-    public static void correlate(DBCollection stars, DBCollection repos, DBCollection scores, DBCollection meta) {
+    public static void correlate(DBCollection stars, DBCollection repos,
+                                 DBCollection scores, IncrementedStatistic statistic) {
+
         Logger.important("Rebuilding correlations for repos that need updates.");
 
         int completed = 0;
@@ -100,9 +103,7 @@ public class CorrelationsAlgorithm {
             progress.put("correlations_done", true);
             repos.save(repo);
 
-            BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "correlations_done"));
-            obj.put("value", ++completed);
-            meta.save(obj);
+            statistic.increment();
 
             Logger.info("Correlations for: #" + completed + " (" + repo.getString("name") + ") are done.");
         }

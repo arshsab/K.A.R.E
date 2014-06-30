@@ -9,6 +9,7 @@ import com.mongodb.MongoException;
 import io.kare.suggest.Logger;
 import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.fetch.HttpResponse;
+import io.kare.suggest.statistic.IncrementedStatistic;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,17 +28,17 @@ public class UpdateStarsRunnable implements Runnable {
     private final AtomicInteger atom;
     private final DBCollection stars;
     private final DBCollection repos;
-    private final DBCollection meta;
+    private final IncrementedStatistic stat;
     private final BasicDBObject obj;
     private final Fetcher fetcher;
     private final String repo;
 
-    public UpdateStarsRunnable(DBCollection stars, DBCollection repos, DBCollection meta,
+    public UpdateStarsRunnable(DBCollection stars, DBCollection repos, IncrementedStatistic stat,
                                     AtomicInteger atom, Fetcher fetcher, BasicDBObject obj) {
 
         this.stars = stars;
         this.repos = repos;
-        this.meta = meta;
+        this.stat = stat;
         this.atom = atom;
         this.obj = obj;
         this.repo = obj.getString("indexed_name");
@@ -125,9 +126,7 @@ public class UpdateStarsRunnable implements Runnable {
 
             repos.save(obj);
 
-            BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "stars_done"));
-            obj.put("value", atom.incrementAndGet());
-            meta.save(obj);
+            stat.increment();
         } catch (Throwable t) {
             t.printStackTrace();
         }

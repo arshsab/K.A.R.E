@@ -6,6 +6,7 @@ import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.repos.RepoUpdateAlgorithm;
 import io.kare.suggest.stars.CorrelationsAlgorithm;
 import io.kare.suggest.stars.UpdateStarsAlgorithm;
+import io.kare.suggest.statistic.IncrementedStatistic;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,106 +18,103 @@ import java.util.Objects;
  */
 
 public class Kare {
+    private String version;
     private final Fetcher fetcher;
+    private final DB data,
+                     statistics;
+    private final DBCollection stars,
+                               repos,
+                               scores,
+                               runtime;
 
-    Kare() {
+    Kare(DB data, DB statistics) {
         this.fetcher = new Fetcher();
-    }
+        this.statistics = statistics;
+        this.data = data;
 
-    public void update(DB db) throws IOException {
         String[] collections = {
                 "repos",
                 "stars",
-                "updates",
                 "scores",
-                "meta"
         };
 
         Arrays.stream(collections)
-                .filter(s -> !db.collectionExists(s))
-                .forEach(s -> db.createCollection(s, null));
+                .filter(s -> !data.collectionExists(s))
+                .forEach(s -> data.createCollection(s, null));
 
-        DBCollection meta = db.getCollection("meta");
+        this.stars   = data.getCollection("stars");
+        this.repos   = data.getCollection("repos");
+        this.scores  = data.getCollection("scores");
+        this.runtime = statistics.getCollection("runtime");
 
-        String version = System.getProperty("kare.version");
+        this.version = System.getProperty("kare.version");
+    }
 
-        if (meta.getCount() == 0) {
-            init(db);
-        } else if (find(meta, "role", "version") == null ||
-                !find(meta, "role", "version").getString("value").equals(version)) {
-
-            init(db);
-        } else if (find(meta, "role", "done").getBoolean("value")) {
-            init(db);
-        } else {
-            BasicDBObject obj = find(meta, "role", "crashes");
-
-            int prev = obj.getInt("value");
-
-            obj.put("value", prev + 1);
-
-            meta.save(obj);
+    public void update() throws IOException {
+        if (!setupRuntime()) {
+            Logger.fatal("K.A.R.E is already running on the server.");
+            return;
         }
 
-        if (find(meta, "role", "current_task").getString("value").equals("repo_updates")) {
-            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), meta);
+        BasicDBObject currentTask = (BasicDBObject) runtime.findOne(new BasicDBObject("role", "current_task"));
 
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "star_updates");
+        IncrementedStatistic repoStat        = new IncrementedStatistic("repos", statistics);
+        IncrementedStatistic starStat        = new IncrementedStatistic("stars", statistics);
+        IncrementedStatistic correlationStat = new IncrementedStatistic("correlations", statistics);
 
-            meta.save(task, WriteConcern.JOURNALED);
+        if (currentTask.getString("value").equals("repo_updates")) {
+
+            RepoUpdateAlgorithm.update(fetcher, repos, repoStat);
+
+            currentTask.put("value", "star_updates");
+            runtime.save(currentTask);
         }
 
-        if (find(meta, "role", "current_task").getString("value").equals("star_updates")) {
-            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"),
-                    db.getCollection("repos"),  db.getCollection("meta"), fetcher);
+        if (currentTask.getString("value").equals("star_updates")) {
+            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(stars, repos, starStat, fetcher);
 
-            for (DBObject obj : db.getCollection("repos").find()) {
+            for (DBObject obj : data.getCollection("repos").find()) {
                 starAlgo.consume((BasicDBObject) obj);
             }
 
             starAlgo.completeProcessing();
 
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "correlation_updates");
-
-            meta.save(task, WriteConcern.JOURNALED);
+            currentTask.put("value", "correlation_updates");
+            runtime.save(currentTask);
         }
 
-        if (find(meta, "role", "current_task").getString("value").equals("correlation_updates")) {
-            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"), meta);
+        if (currentTask.getString("value").equals("correlation_updates")) {
+            CorrelationsAlgorithm.correlate(stars, repos, scores, correlationStat);
 
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "cleanup");
-
-            meta.save(task, WriteConcern.JOURNALED);
+            currentTask.put("value", "done");
+            runtime.save(currentTask);
         }
 
-        BasicDBObject allDone = find(meta, "role", "done");
-        allDone.put("value", true);
 
-        meta.save(allDone);
     }
 
-    public void init(DB db) {
-        Logger.important("Resetting DB's update info.");
+    private boolean setupRuntime() {
+        if (runtime.findOne(new BasicDBObject("role", "running")) == null) {
+            runtime.insert(new BasicDBObject("role", "running"));
 
-        db.getCollection("meta").drop();
-        db.createCollection("meta", null);
+            BasicDBObject currentTask = (BasicDBObject) runtime.findOne(new BasicDBObject("role", "current_task"));
 
-        DBCollection meta = db.getCollection("meta");
+            if (currentTask == null || currentTask.get("value").equals("done")) {
+                runtime.remove(new BasicDBObject("role", "current_task"));
 
-        meta.insert(new BasicDBObject("role", "current_task").append("value", "repo_updates"));
-        meta.insert(new BasicDBObject("role", "version").append("value", "1.0"));
-        meta.insert(new BasicDBObject("role", "redos").append("value", 0));
-        meta.insert(new BasicDBObject("role", "stars_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "correlations_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "done").append("value", false));
-        meta.insert(new BasicDBObject("role", "crashes").append("value", 0));
-        meta.insert(new BasicDBObject("role", "version").append("value", System.getProperty("kare.version")));
-    }
+                runtime.insert(new BasicDBObject()
+                        .append("role", "current_task")
+                        .append("value", "repo_updates")
+                );
+            }
 
-    private BasicDBObject find(DBCollection coll, String what, String value) {
-        return ((BasicDBObject) coll.findOne(new BasicDBObject(what, value)));
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(() -> runtime.remove(new BasicDBObject("role", "running")))
+            );
+
+            return true;
+        }
+
+        return false;
     }
 }

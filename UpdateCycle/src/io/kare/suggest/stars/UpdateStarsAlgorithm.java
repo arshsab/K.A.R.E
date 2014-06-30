@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
+import io.kare.suggest.statistic.IncrementedStatistic;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -27,16 +28,16 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
 
     private final DBCollection stars;
     private final DBCollection repos;
-    private final DBCollection meta;
+    private final IncrementedStatistic stat;
     private final Fetcher fetcher;
     private final ExecutorService exec = Executors.newFixedThreadPool(8);
     private final AtomicInteger atom = new AtomicInteger(0);
 
-    public UpdateStarsAlgorithm(DBCollection stars, DBCollection repos, DBCollection meta, Fetcher fetcher) {
+    public UpdateStarsAlgorithm(DBCollection stars, DBCollection repos, IncrementedStatistic stat, Fetcher fetcher) {
         this.fetcher = fetcher;
         this.stars = stars;
         this.repos = repos;
-        this.meta = meta;
+        this.stat = stat;
 
         stars.ensureIndex(
             new BasicDBObject()
@@ -56,7 +57,7 @@ public class UpdateStarsAlgorithm implements RepoConsumer {
         BasicDBObject obj = (BasicDBObject) repo.get("progress");
 
         if (!obj.getBoolean("stars_done")) {
-            exec.submit(new UpdateStarsRunnable(stars, repos, meta, atom, fetcher, repo));
+            exec.submit(new UpdateStarsRunnable(stars, repos, stat, atom, fetcher, repo));
         }
     }
 

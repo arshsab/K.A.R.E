@@ -9,6 +9,7 @@ import io.kare.suggest.Logger;
 import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.stars.UpdateStarsAlgorithm;
+import io.kare.suggest.statistic.IncrementedStatistic;
 
 import java.io.IOException;
 import java.util.*;
@@ -24,7 +25,7 @@ public class RepoUpdateAlgorithm {
     private static final int UPPER_BOUND = 100_000;
     private static final int LOWER_BOUND = 0;
 
-    public static void update(Fetcher fetcher, DBCollection repos, DBCollection meta) throws IOException {
+    public static void update(Fetcher fetcher, DBCollection repos, IncrementedStatistic stat) throws IOException {
         Logger.important("Starting repo updates.");
 
         repos.ensureIndex(new BasicDBObject("indexed_name", 1));
@@ -88,7 +89,9 @@ public class RepoUpdateAlgorithm {
 
                     boolean shouldRedo  = repo.getInt("gazers") / ((double) Math.max(repo.getInt("scraped_stars"), 1)) > 1.075;
 
-                    if (shouldRedo) ++redos;
+                    if (shouldRedo) {
+                        stat.increment();
+                    }
 
                     BasicDBObject progress = new BasicDBObject();
                     progress.put("stars_done", !shouldRedo);
@@ -102,6 +105,8 @@ public class RepoUpdateAlgorithm {
                         repos.insert(repo);
                     else
                         repos.save(repo);
+
+
                 }
 
                 if (root.size() < 100) {
@@ -111,10 +116,6 @@ public class RepoUpdateAlgorithm {
 
             upper = lower;
         }
-
-        BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "redos"));
-        obj.put("value", redos);
-        meta.save(obj);
     }
 
     private static int binSearch(int num, Fetcher fetcher) throws IOException {
