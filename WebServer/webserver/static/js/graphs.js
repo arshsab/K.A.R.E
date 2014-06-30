@@ -1,5 +1,5 @@
-(function main(window, document, undefined) {
-    document.addEventListener('DOMContentLoaded', function() {
+(function (window, document, undefined) {
+    $(function() {
         /**
          * This data must be formatted as such:
          * [ {x: 1, y: 20}, {x: 25, y: 33}]
@@ -32,10 +32,8 @@
         ];
        $repoTime.epoch({
            type: 'area',
-           data: repoTimeData
+           data: repoTimeData,
            axes: ['left', 'bottom']
        });
-
     });
-
 })(window, document);
