@@ -13,7 +13,9 @@ import io.kare.suggest.tasks.Task;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -21,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 03 2014
  */
 
-public class UpdateTokensTask extends Task<BasicDBObject, BasicDBObject> {
+public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Token[] tokens = { Token.WATCHERS, Token.STARGAZERS };
 
@@ -48,20 +50,21 @@ public class UpdateTokensTask extends Task<BasicDBObject, BasicDBObject> {
 
         Logger.info("Updating repo: " + repo);
 
+        Map<Token, List<BasicDBObject>> tokenResult = new HashMap<>();
+
         try {
-            for (Token token : tokens) {
-                DBCollection stars = db.getCollection(token.dbName);
+            for (Token tokenType : tokens) {
+                DBCollection tokenCollection = db.getCollection(tokenType.dbName);
 
                 // On most updates, we shouldn't get more than 1 page of stars.
-                List<BasicDBObject> allStars = new ArrayList<>(100);
+                List<BasicDBObject> allTokens = new ArrayList<>(100);
 
-                outer:
                 for (int i = 1; ; i++) {
-                    List<BasicDBObject> newStars = new ArrayList<>(100);
+                    List<BasicDBObject> newTokens = new ArrayList<>(100);
 
                     String data;
 
-                    HttpResponse resp = fetcher.fetch("repos/" + repo + "/" + token.urlSuffix + "?per_page=100&page=" + i);
+                    HttpResponse resp = fetcher.fetch("repos/" + repo + "/" + tokenType.urlSuffix + "?per_page=100&page=" + i);
                     if (resp.responseCode == 200) {
                         data = resp.response;
                     } else if (resp.responseCode == 404) {
@@ -87,55 +90,52 @@ public class UpdateTokensTask extends Task<BasicDBObject, BasicDBObject> {
                     for (int j = 0; node.has(j); j++) {
                         String name = node.path(j).get("login").textValue();
 
-                        newStars.add(new BasicDBObject()
+                        newTokens.add(new BasicDBObject()
                                 .append("name", repo)
                                 .append("gazer", name)
                         );
                     }
 
 
-                    Logger.debug("Found " + newStars.size() + " new stars.");
+                    Logger.debug("Found " + newTokens.size() + " new stars.");
 
-                    allStars.addAll(newStars);
+                    boolean repeats = false;
 
-                    // Either we run out of stars
-                    if (newStars.size() < 100) {
-                        break;
-                    }
-
-                    // Or we start repeating ourselves
-                    for (BasicDBObject star : newStars) {
-                        if (stars.findOne(star) != null) {
-                            break outer;
+                    // We start repeating ourselves
+                    for (BasicDBObject token : newTokens) {
+                        if (tokenCollection.findOne(token) != null) {
+                            repeats = true;
+                        } else {
+                            allTokens.add(token);
                         }
                     }
-                }
 
-                // Reverse the order in case we crash while in this loop.
-                for (int i = allStars.size() - 1; i >= 0; i--) {
-                    try {
-                        stars.insert(allStars.get(i));
-                        output(allStars.get(i));
-                    } catch (MongoException.DuplicateKey ignored) {
-                        Logger.debug("The DBCollection stars already has: " + allStars.get(i).getString("gazer")
-                                + " starring " + repo);
+                    // Or we run out of stars.
+                    if (repeats || newTokens.size() < 100) {
+                        break;
                     }
                 }
 
-                obj.put("scraped_stars", (int) stars.count(new BasicDBObject("name", repo)));
+                tokenResult.put(tokenType, allTokens);
 
-                BasicDBObject progress = (BasicDBObject) obj.get("progress");
-                progress.put("stars_done", true);
-
-                repos.save(obj);
-
-                BasicDBObject metric = (BasicDBObject) meta.findOne(new BasicDBObject("role", "stars_done"));
-                metric.put("value", atom.incrementAndGet());
-                meta.save(obj);
+                if (tokenType == Token.STARGAZERS)
+                    obj.put("scraped_stars", (int) tokenCollection.count(new BasicDBObject("name", repo)));
             }
+
+            BasicDBObject progress = (BasicDBObject) obj.get("progress");
+            progress.put("stars_done", true);
+
+            repos.save(obj);
+
+            BasicDBObject metric = (BasicDBObject) meta.findOne(new BasicDBObject("role", "stars_done"));
+            metric.put("value", atom.incrementAndGet());
+            meta.save(obj);
+
+            output(new UpdateTokenResult(repo, tokenResult));
         } catch (Throwable t) {
             t.printStackTrace();
         }
+
 
         Logger.info("Finished with updating repo: " + repo);
     }

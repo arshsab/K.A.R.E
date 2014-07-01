@@ -57,7 +57,7 @@ public abstract class Task<I, O> {
             wait();
     }
 
-    protected void shutdown() {
+    public void shutdown() {
         exec.shutdown();
 
         while (!exec.isTerminated()) {
@@ -68,13 +68,12 @@ public abstract class Task<I, O> {
             }
         }
 
-        this.shutdown = true;
-
-        notifyAll();
-
         for (Task t : consumers) {
             t.shutdown();
         }
+
+        this.shutdown = true;
+        notifyAll();
     }
 
     public boolean isShutdown() {
