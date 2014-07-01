@@ -3,13 +3,12 @@ package io.kare.suggest;
 import com.mongodb.*;
 
 import io.kare.suggest.fetch.Fetcher;
-import io.kare.suggest.repos.RepoUpdateAlgorithm;
-import io.kare.suggest.stars.CorrelationsAlgorithm;
-import io.kare.suggest.stars.UpdateStarsAlgorithm;
+import io.kare.suggest.repos.RepoUpdateTask;
+import io.kare.suggest.tokens.UpdateTokensTask;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author arshsab
@@ -23,10 +22,11 @@ public class Kare {
         this.fetcher = new Fetcher();
     }
 
-    public void update(DB db) throws IOException {
+    public void update(DB db) throws IOException, InterruptedException {
         String[] collections = {
                 "repos",
                 "stars",
+                "watchers",
                 "updates",
                 "scores",
                 "meta"
@@ -37,6 +37,7 @@ public class Kare {
                 .forEach(s -> db.createCollection(s, null));
 
         DBCollection meta = db.getCollection("meta");
+        DBCollection repos = db.getCollection("repos");
 
         String version = System.getProperty("kare.version");
 
@@ -58,39 +59,14 @@ public class Kare {
             meta.save(obj);
         }
 
-        if (find(meta, "role", "current_task").getString("value").equals("repo_updates")) {
-            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), meta);
+        RepoUpdateTask repoUpdates = new RepoUpdateTask(fetcher, repos, meta);
+        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, meta, new AtomicInteger(), fetcher);
+        // todo :
 
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "star_updates");
+        repoUpdates.addConsumer(tokenUpdates);
+        repoUpdates.startChain();
 
-            meta.save(task, WriteConcern.JOURNALED);
-        }
-
-        if (find(meta, "role", "current_task").getString("value").equals("star_updates")) {
-            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"),
-                    db.getCollection("repos"),  db.getCollection("meta"), fetcher);
-
-            for (DBObject obj : db.getCollection("repos").find()) {
-                starAlgo.consume((BasicDBObject) obj);
-            }
-
-            starAlgo.completeProcessing();
-
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "correlation_updates");
-
-            meta.save(task, WriteConcern.JOURNALED);
-        }
-
-        if (find(meta, "role", "current_task").getString("value").equals("correlation_updates")) {
-            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"), meta);
-
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "cleanup");
-
-            meta.save(task, WriteConcern.JOURNALED);
-        }
+        repoUpdates.awaitShutdown();
 
         BasicDBObject allDone = find(meta, "role", "done");
         allDone.put("value", true);

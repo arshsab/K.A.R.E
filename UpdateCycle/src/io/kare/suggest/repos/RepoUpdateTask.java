@@ -3,12 +3,10 @@ package io.kare.suggest.repos;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import io.kare.suggest.Logger;
-import io.kare.suggest.RepoConsumer;
 import io.kare.suggest.fetch.Fetcher;
-import io.kare.suggest.stars.UpdateStarsAlgorithm;
+import io.kare.suggest.tasks.Producer;
 
 import java.io.IOException;
 import java.util.*;
@@ -18,23 +16,38 @@ import java.util.*;
  * @since 03 2014
  */
 
-public class RepoUpdateAlgorithm {
-    private static final Map<Integer, Integer> lookupTable = new HashMap<>();
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static final int UPPER_BOUND = 100_000;
-    private static final int LOWER_BOUND = 0;
+public class RepoUpdateTask extends Producer<BasicDBObject> {
+    private final Map<Integer, Integer> lookupTable = new HashMap<>();
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    public static void update(Fetcher fetcher, DBCollection repos, DBCollection meta) throws IOException {
+    private final DBCollection repos, meta;
+    private final Fetcher fetcher;
+    private final int id;
+
+    private final int UPPER_BOUND = 100_000;
+    private final int LOWER_BOUND = 0;
+
+    public RepoUpdateTask(Fetcher fetcher, DBCollection repos, DBCollection meta) {
+        super("Repo Updates");
+        this.fetcher = fetcher;
+        this.repos = repos;
+        this.meta = meta;
+
+        BasicDBObject idObj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "id"));
+
+        this.id = idObj.getInt("value");
+    }
+
+    public void update() throws IOException {
         Logger.important("Starting repo updates.");
 
         repos.ensureIndex(new BasicDBObject("indexed_name", 1));
-        lookupTable.clear();
 
         List<Integer> ranges = new ArrayList<>();
 
         int last = UPPER_BOUND;
         int n = 1000;
-        while(true) {
+        while (true) {
             int nex = binSearch(n, fetcher);
 
             Logger.info("Found " + n + " repos above " + nex);
@@ -74,6 +87,7 @@ public class RepoUpdateAlgorithm {
 
                     if (newRepo) {
                         repo = new BasicDBObject("scraped_stars", 0);
+                        repo.put("r_id", id);
                     }
 
                     repo.put("indexed_name", node.path("full_name").textValue().toLowerCase());
@@ -88,7 +102,6 @@ public class RepoUpdateAlgorithm {
 
                     boolean shouldRedo  = repo.getInt("gazers") / ((double) Math.max(repo.getInt("scraped_stars"), 1)) > 1.075;
 
-                    if (shouldRedo) ++redos;
 
                     BasicDBObject progress = new BasicDBObject();
                     progress.put("stars_done", !shouldRedo);
@@ -102,6 +115,11 @@ public class RepoUpdateAlgorithm {
                         repos.insert(repo);
                     else
                         repos.save(repo);
+
+                    if (shouldRedo) {
+                        ++redos;
+                        output(repo);
+                    }
                 }
 
                 if (root.size() < 100) {
@@ -117,7 +135,7 @@ public class RepoUpdateAlgorithm {
         meta.save(obj);
     }
 
-    private static int binSearch(int num, Fetcher fetcher) throws IOException {
+    private int binSearch(int num, Fetcher fetcher) throws IOException {
         int low = LOWER_BOUND;
         int high = UPPER_BOUND;
 
@@ -137,7 +155,7 @@ public class RepoUpdateAlgorithm {
         return low;
     }
 
-    private static int grab(int num, Fetcher fetcher) throws IOException {
+    private int grab(int num, Fetcher fetcher) throws IOException {
         if (lookupTable.containsKey(num)) {
             return lookupTable.get(num);
         }
@@ -153,5 +171,15 @@ public class RepoUpdateAlgorithm {
         lookupTable.put(num, count);
 
         return count;
+    }
+
+    @Override
+    protected void produce() {
+        try {
+            update();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            throw new RuntimeException(ioe);
+        }
     }
 }

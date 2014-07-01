@@ -23,12 +23,18 @@ public abstract class Task<I, O> {
     }
 
     private void input(I i) {
-        exec.submit(() -> consume(i));
+        exec.submit(() -> {
+            try {
+                consume(i);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     protected abstract void consume(I i);
 
-    private void output(O o) {
+    protected void output(O o) {
         consumers.stream().forEach(t -> t.input(o));
     }
 
@@ -54,7 +60,7 @@ public abstract class Task<I, O> {
     protected void shutdown() {
         exec.shutdown();
 
-        while (exec.isTerminated()) {
+        while (!exec.isTerminated()) {
             try {
                 exec.awaitTermination(1000, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
