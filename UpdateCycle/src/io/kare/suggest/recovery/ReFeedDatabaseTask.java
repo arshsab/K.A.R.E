@@ -4,8 +4,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import io.kare.suggest.tasks.Task;
+import io.kare.suggest.tokens.Token;
 import io.kare.suggest.tokens.UpdateTokenResult;
 import io.kare.suggest.tokens.UpdateTokensTask;
+
+import java.util.List;
 
 /**
  * @author arshsab
@@ -16,7 +19,7 @@ public class ReFeedDatabaseTask extends Task<UpdateTokenResult, UpdateTokenResul
     private final DBCollection stars, watchers;
 
     public ReFeedDatabaseTask(DBCollection stars, DBCollection watchers) {
-        super(1, 10, "Re-Feed Database");
+        super(1, "Re-Feed Database");
 
         this.stars = stars;
         this.watchers = watchers;
@@ -24,6 +27,17 @@ public class ReFeedDatabaseTask extends Task<UpdateTokenResult, UpdateTokenResul
 
     @Override
     protected void consume(UpdateTokenResult result) {
-        // todo
+        List<BasicDBObject> stars = result.tokens.get(Token.STARGAZERS);
+        List<BasicDBObject> watchers = result.tokens.get(Token.WATCHERS);
+
+        for (DBCursor cursor = this.stars.find(new BasicDBObject("name", result.repo)); cursor.hasNext(); ) {
+            stars.add((BasicDBObject) cursor.next());
+        }
+
+        for (DBCursor cursor = this.watchers.find(new BasicDBObject("name", result.repo)); cursor.hasNext(); ) {
+            watchers.add((BasicDBObject) cursor.next());
+        }
+
+        output(result);
     }
 }

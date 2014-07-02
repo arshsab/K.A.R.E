@@ -1,6 +1,7 @@
 package io.kare.suggest.tasks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -29,7 +30,6 @@ public abstract class Task<I, O> {
 
         for (int i = 0; i < this.threads.length; i++) {
             this.threads[i] = new WorkerThread(queue);
-            this.threads[i].start();
         }
 
         this.name = name;
@@ -68,6 +68,10 @@ public abstract class Task<I, O> {
     }
 
     public void startChain() {
+        for (Thread t : threads) {
+            t.start();
+        }
+
         startTask();
 
         consumers.stream().forEach(t -> t.startChain());

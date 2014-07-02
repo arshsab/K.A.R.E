@@ -3,6 +3,7 @@ package io.kare.suggest.tokens;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.mongodb.MongoException;
 import io.kare.suggest.Logger;
 import io.kare.suggest.tasks.Task;
 
@@ -22,7 +23,8 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
     private final Map<Integer, Integer> starsByIds = new ConcurrentHashMap<>();
 
     public TokenAnalysisTask(DBCollection stars, DBCollection watchers, DBCollection repos, DBCollection scores) {
-        super(1, "Token Analysis");
+        // Size limited so that long lists with stargazers don't build up while the TokenAnalysis is waiting to run.
+        super(1, 16, "Token Analysis");
 
         this.stars = stars;
         this.repos = repos;
@@ -34,6 +36,11 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
 
         watchers.ensureIndex(new BasicDBObject("name", 1));
         watchers.ensureIndex(new BasicDBObject("gazer", 1));
+
+        scores.ensureIndex(new BasicDBObject()
+            .append("a", 1)
+            .append("b", 1)
+        );
     }
 
 
@@ -102,7 +109,9 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
                 }
             }
 
-            stars.insert(newStars.get(i));
+            try {
+                stars.insert(newStars.get(i));
+            } catch (MongoException.DuplicateKey ignored) { /* Redoing scores. */ }
         }
 
         List<BasicDBObject> newWatchers = result.tokens.get(Token.WATCHERS);
@@ -128,7 +137,9 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
                 scores.update(backwardQuery, watcherUpdate);
             }
 
-            watchers.insert(watcher);
+            try {
+                watchers.insert(watcher);
+            } catch (MongoException.DuplicateKey ignored) { /* Redoing scores. */ }
         }
 
         Logger.info("Finished processing the new tokens for: " + result.repo);

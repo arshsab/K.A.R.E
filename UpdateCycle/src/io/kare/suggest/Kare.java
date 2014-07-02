@@ -4,8 +4,11 @@ import com.mongodb.*;
 
 import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.recovery.OutOfDateRepoProducer;
+import io.kare.suggest.recovery.ReFeedDatabaseTask;
 import io.kare.suggest.repos.RepoUpdateTask;
+import io.kare.suggest.tasks.Chain;
 import io.kare.suggest.tasks.Producer;
+import io.kare.suggest.tasks.Task;
 import io.kare.suggest.tokens.TokenAnalysisTask;
 import io.kare.suggest.tokens.UpdateTokensTask;
 
@@ -44,17 +47,70 @@ public class Kare {
         DBCollection watchers = db.getCollection("watchers");
         DBCollection scores = db.getCollection("scores");
 
-        Producer<BasicDBObject> repoUpdates = Boolean.parseBoolean(System.getProperty("kare.recovery")) ?
-                new OutOfDateRepoProducer(repos) :
-                new RepoUpdateTask(fetcher, repos);
+        Chain chain;
 
-        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, fetcher);
-        TokenAnalysisTask tokenAnalysis = new TokenAnalysisTask(stars, watchers, repos, scores);
+        switch (System.getProperty("kare.run-type")) {
+            case "update":
+                chain = buildUpdateChain(fetcher, db, repos, stars, watchers, scores);
+                break;
+            case "recovery":
+                chain = buildRecoveryChain(fetcher, db, repos, stars, watchers, scores);
+                break;
+            case "rebuild":
+                chain = buildRedoScoresChain(fetcher, db, repos, stars, watchers, scores);
+                break;
+            default:
+                throw new RuntimeException("Invalid run type: " + System.getProperty("kare.run-type"));
+        }
 
-        repoUpdates.addConsumer(tokenUpdates);
-        tokenUpdates.addConsumer(tokenAnalysis);
+        chain.start();
+        chain.shutdown();
+    }
 
-        repoUpdates.startChain();
-        repoUpdates.shutdown();
+    private Chain buildUpdateChain(Fetcher fetcher, DB db, DBCollection repos, DBCollection stars,
+                                   DBCollection watchers, DBCollection scores) {
+
+        return new Chain(new Task[] {
+                new RepoUpdateTask(fetcher, repos),
+                new UpdateTokensTask(db, fetcher),
+                new TokenAnalysisTask(stars, watchers, repos, scores)
+        });
+    }
+
+    private Chain buildRecoveryChain(Fetcher fetcher, DB db, DBCollection repos, DBCollection stars,
+                                   DBCollection watchers, DBCollection scores) {
+
+        return new Chain(new Task[] {
+                new OutOfDateRepoProducer(repos),
+                new UpdateTokensTask(db, fetcher),
+                new TokenAnalysisTask(stars, watchers, repos, scores)
+        });
+    }
+
+    private Chain buildRedoScoresChain(Fetcher fetcher, DB db, DBCollection repos, DBCollection stars,
+                                       DBCollection watchers, DBCollection scores) {
+
+        scores.drop();
+        repos.update(new BasicDBObject(), new BasicDBObject("$set", new BasicDBObject("should_update", true)), false, true);
+
+        DBCollection stars2 = db.getCollection("stars2");
+        DBCollection watchers2 = db.getCollection("watchers2");
+
+        return new Chain(new Task[] {
+                new OutOfDateRepoProducer(repos),
+                new UpdateTokensTask(db, fetcher),
+                new ReFeedDatabaseTask(stars, watchers),
+                new TokenAnalysisTask(stars2, watchers2, repos, scores),
+                new Task<Void, Void>(0, 1, "Rename Collections") {
+                    @Override protected void consume(Void o) {}
+
+                    @Override public void shutdown() throws InterruptedException {
+                        super.shutdown();
+
+                        stars2.rename("stars", true);
+                        watchers2.rename("watchers", true);
+                    }
+                }
+        });
     }
 }

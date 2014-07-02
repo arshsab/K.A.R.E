@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 
 public class Main {
     public static void main(String... args) throws InterruptedException {
+        Runnable shutdown = null;
+
         try {
             if (args.length == 0) {
                 Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
@@ -34,12 +36,13 @@ public class Main {
                 return;
             }
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                Logger.important("Shutting down via shutdown hook.");
+            shutdown = () -> {
+                Logger.important("Shutting down...");
 
-                DBObject atom = runtime.findOne();
-                runtime.remove(atom);
-            }));
+                runtime.drop();
+            };
+
+            Runtime.getRuntime().addShutdownHook(new Thread(shutdown));
 
 
             Logger.important("Starting Kare. Version #" + System.getProperty("kare.version"));
@@ -51,6 +54,9 @@ public class Main {
             Logger.important("Completed an update. Exiting...");
         } catch (Throwable t) {
             t.printStackTrace();
+        } finally {
+            if (shutdown != null)
+                shutdown.run();
         }
     }
 }

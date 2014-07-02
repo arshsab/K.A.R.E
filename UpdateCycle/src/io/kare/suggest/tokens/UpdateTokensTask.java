@@ -27,15 +27,13 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Token[] tokens = { Token.WATCHERS, Token.STARGAZERS };
 
-    private final DBCollection repos;
     private final Fetcher fetcher;
     private final DB db;
 
-    public UpdateTokensTask(DB db, DBCollection repos, Fetcher fetcher) {
+    public UpdateTokensTask(DB db, Fetcher fetcher) {
         super(8, "Star Updater");
 
         this.db = db;
-        this.repos = repos;
 
         this.fetcher = fetcher;
     }
