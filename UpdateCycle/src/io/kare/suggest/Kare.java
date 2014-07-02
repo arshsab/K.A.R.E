@@ -43,7 +43,7 @@ public class Kare {
         DBCollection scores = db.getCollection("scores");
 
         RepoUpdateTask repoUpdates = new RepoUpdateTask(fetcher, repos);
-        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, new AtomicInteger(), fetcher);
+        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, fetcher);
         TokenAnalysisTask tokenAnalysis = new TokenAnalysisTask(stars, watchers, repos, scores);
 
         repoUpdates.addConsumer(tokenUpdates);

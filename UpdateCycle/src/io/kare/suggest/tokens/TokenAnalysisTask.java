@@ -28,6 +28,12 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         this.repos = repos;
         this.watchers = watchers;
         this.scores = scores;
+
+        stars.ensureIndex(new BasicDBObject("name", 1));
+        stars.ensureIndex(new BasicDBObject("gazer", 1));
+
+        watchers.ensureIndex(new BasicDBObject("name", 1));
+        watchers.ensureIndex(new BasicDBObject("gazer", 1));
     }
 
 
@@ -63,7 +69,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
                 scores.update(backwardQuery, starUpdate);
 
                 BasicDBObject forward = (BasicDBObject) scores.findOne(forwardQuery);
-                BasicDBObject backward = (BasicDBObject) scores.findOne(forwardQuery);
+                BasicDBObject backward = (BasicDBObject) scores.findOne(backwardQuery);
 
 
                 if (forward == null || backward == null) {
@@ -180,7 +186,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         for (DBCursor cursor = stars.find(new BasicDBObject("gazer", gazer)); cursor.hasNext(); ) {
             BasicDBObject star = (BasicDBObject) cursor.next();
 
-            result.add(star.getString("gazer"));
+            result.add(star.getString("name"));
         }
 
         return result;
@@ -192,7 +198,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         for (DBCursor cursor = watchers.find(new BasicDBObject("gazer", gazer)); cursor.hasNext(); ) {
             BasicDBObject watcher = (BasicDBObject) cursor.next();
 
-            result.add(watcher.getString("gazer"));
+            result.add(watcher.getString("name"));
         }
 
         return result;

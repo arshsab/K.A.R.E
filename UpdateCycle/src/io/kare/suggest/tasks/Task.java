@@ -52,11 +52,6 @@ public abstract class Task<I, O> {
         consumers.stream().forEach(t -> t.startChain());
     }
 
-    public void awaitShutdown() throws InterruptedException {
-        while (!shutdown)
-            wait();
-    }
-
     public void shutdown() {
         exec.shutdown();
 
@@ -73,11 +68,6 @@ public abstract class Task<I, O> {
         }
 
         this.shutdown = true;
-        notifyAll();
-    }
-
-    public boolean isShutdown() {
-        return shutdown;
     }
 
     public String toString() {

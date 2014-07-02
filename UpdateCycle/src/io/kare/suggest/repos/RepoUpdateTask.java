@@ -24,7 +24,7 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
     private final DBCollection repos;
     private final Fetcher fetcher;
     private final int threshold;
-    private final int id;
+    private int id;
 
     private final int UPPER_BOUND = 100_000;
     private final int LOWER_BOUND = 0;
@@ -35,10 +35,12 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
         this.repos = repos;
         this.threshold = Integer.parseInt(System.getProperty("kare.minimum-stars"));
 
+        repos.ensureIndex(new BasicDBObject("indexed_name", 1));
+        repos.ensureIndex(new BasicDBObject("r_id", 1));
+
         DBCursor curs = repos.find().sort(new BasicDBObject("r_id", -1));
 
-        this.id = ((BasicDBObject) curs.next()).getInt("r_id");
-
+        this.id = curs.length() == 0 ? 0 : ((BasicDBObject) curs.next()).getInt("r_id");
     }
 
     public void update() throws IOException {
@@ -50,7 +52,7 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
         int last = UPPER_BOUND;
         int n = 1000;
-        while (true) {
+        while (last > threshold) {
             int nex = binSearch(n, fetcher);
 
             Logger.info("Found " + n + " repos above " + nex);
@@ -65,8 +67,6 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
             n += 1000;
         }
-
-        int redos = 0;
 
         int upper = UPPER_BOUND;
         for (int lower : ranges) {
@@ -98,7 +98,7 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
                     if (newRepo) {
                         repo = new BasicDBObject("scraped_stars", 0);
-                        repo.put("r_id", id);
+                        repo.put("r_id", id++);
                     }
 
                     repo.put("indexed_name", node.path("full_name").textValue().toLowerCase());
@@ -128,7 +128,6 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
                         repos.save(repo);
 
                     if (shouldRedo) {
-                        ++redos;
                         output(repo);
                     }
                 }
