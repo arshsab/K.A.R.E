@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author arshsab
@@ -21,6 +22,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
     private final DBCollection stars, repos, watchers, scores;
     private final Map<String, Integer> repoIds = new ConcurrentHashMap<>();
     private final Map<Integer, Integer> starsByIds = new ConcurrentHashMap<>();
+    private final AtomicInteger counter = new AtomicInteger();
 
     public TokenAnalysisTask(DBCollection stars, DBCollection watchers, DBCollection repos, DBCollection scores) {
         // Size limited so that long lists with stargazers don't build up while the TokenAnalysis is waiting to run.
@@ -142,7 +144,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
             } catch (MongoException.DuplicateKey ignored) { /* Redoing scores. */ }
         }
 
-        Logger.info("Finished processing the new tokens for: " + result.repo);
+        Logger.info("Finished processing the new tokens for: " + result.repo + " [#" + counter.getAndIncrement() + "]");
 
         markRepoCompleted(result.repo);
     }

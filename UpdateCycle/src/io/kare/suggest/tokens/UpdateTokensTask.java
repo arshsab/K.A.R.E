@@ -27,6 +27,7 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Token[] tokens = { Token.WATCHERS, Token.STARGAZERS };
 
+    private final AtomicInteger counter = new AtomicInteger();
     private final Fetcher fetcher;
     private final DB db;
 
@@ -119,6 +120,6 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
         }
 
 
-        Logger.info("Finished with updating tokens for repo: " + repo);
+        Logger.info("Finished with updating tokens for repo: " + repo + " [#" + counter.getAndIncrement() + "]");
     }
 }
