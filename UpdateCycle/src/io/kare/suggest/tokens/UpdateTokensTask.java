@@ -93,7 +93,7 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
                     }
 
 
-                    Logger.debug("Found " + newTokens.size() + " new stars.");
+                    Logger.debug("Found " + newTokens.size() + " new " + tokenType.dbName + " for " + repo + ".");
 
                     boolean repeats = false;
 
@@ -107,7 +107,7 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
                     }
 
                     // Or we run out of stars.
-                    if (repeats || newTokens.size() < 100) {
+                    if (repeats || newTokens.size() == 0) {
                         break;
                     }
                 }

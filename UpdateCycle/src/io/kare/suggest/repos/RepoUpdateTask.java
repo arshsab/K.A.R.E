@@ -113,12 +113,7 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
                     boolean shouldRedo  = repo.getInt("gazers") / ((double) Math.max(repo.getInt("scraped_stars"), 1)) > 1.075;
 
-
-                    BasicDBObject progress = new BasicDBObject();
-                    progress.put("stars_done", !shouldRedo);
-                    progress.put("correlations_done", !shouldRedo);
-
-                    repo.put("progress", progress);
+                    repo.put("should_update", shouldRedo);
 
                     Logger.info("Inserting Repo: " + repo.get("name"));
 

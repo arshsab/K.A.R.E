@@ -16,6 +16,7 @@ public class Main {
                 Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
                 return;
             }
+
             System.getProperties().load(new FileInputStream(args[0]));
 
             MongoClient client = new MongoClient(System.getProperty("mongo.host"),
