@@ -42,7 +42,7 @@ public class Main {
             }));
 
 
-            Logger.important("Starting Kare. Version #1.0");
+            Logger.important("Starting Kare. Version #" + System.getProperty("kare.version"));
 
             Kare kare = new Kare();
 

@@ -44,7 +44,7 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
     protected void consume(BasicDBObject obj) {
         String repo = obj.getString("indexed_name");
 
-        Logger.info("Updating repo: " + repo);
+        Logger.info("Updating tokens for repo: " + repo);
 
         Map<Token, List<BasicDBObject>> tokenResult = new HashMap<>();
 
@@ -121,6 +121,6 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
         }
 
 
-        Logger.info("Finished with updating repo: " + repo);
+        Logger.info("Finished with updating tokens for repo: " + repo);
     }
 }

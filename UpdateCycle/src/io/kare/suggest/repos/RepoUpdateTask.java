@@ -40,7 +40,9 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
         DBCursor curs = repos.find().sort(new BasicDBObject("r_id", -1));
 
-        this.id = curs.length() == 0 ? 0 : ((BasicDBObject) curs.next()).getInt("r_id");
+        BasicDBObject first = (BasicDBObject) curs.next();
+
+        this.id = first == null ? 0 : first.getInt("r_id");
     }
 
     public void update() throws IOException {
@@ -102,14 +104,14 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
                     }
 
                     repo.put("indexed_name", node.path("full_name").textValue().toLowerCase());
-                    repo.put("name", node.path("full_name").textValue());
                     repo.put("pic_url", node.path("owner").path("avatar_url").textValue());
+                    repo.put("default_branch", node.path("default_branch").textValue());
+                    repo.put("owner", node.path("owner").path("login").textValue());
+                    repo.put("description", node.path("description").textValue());
                     repo.put("gazers", node.path("stargazers_count").intValue());
                     repo.put("watchers", node.path("watchers_count").intValue());
-                    repo.put("description", node.path("description").textValue());
-                    repo.put("default_branch", node.path("default_branch").textValue());
                     repo.put("language", node.path("language").textValue());
-                    repo.put("owner", node.path("owner").path("login").textValue());
+                    repo.put("name", node.path("full_name").textValue());
 
                     boolean shouldRedo  = repo.getInt("gazers") / ((double) Math.max(repo.getInt("scraped_stars"), 1)) > 1.075;
 

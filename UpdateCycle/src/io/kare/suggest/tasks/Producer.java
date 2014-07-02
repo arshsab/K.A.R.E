@@ -18,7 +18,7 @@ public abstract class Producer<O> extends Task<Void, O> {
 
     @Override
     public void startTask() {
-        exec.submit(this::produce);
+        queue.add(this::produce);
     }
 
     protected abstract void produce();

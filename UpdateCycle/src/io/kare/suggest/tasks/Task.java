@@ -2,9 +2,9 @@ package io.kare.suggest.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author arshsab
@@ -12,24 +12,45 @@ import java.util.concurrent.TimeUnit;
  */
 
 public abstract class Task<I, O> {
-    protected final ExecutorService exec;
+    private final WorkerThread[] threads;
+    protected final ArrayBlockingQueue<Runnable> queue;
     protected final List<Task<O, ?>> consumers = new ArrayList<>();
     private final String name;
+
     private volatile boolean shutdown = false;
 
-    public Task(final int threads, String name) {
-        this.exec = Executors.newFixedThreadPool(threads);
+    public Task(int threads, String name) {
+        this(threads, 10_000, name);
+    }
+
+    public Task(final int threads, int queueSize, String name) {
+        this.queue = new ArrayBlockingQueue<>(queueSize);
+        this.threads = new WorkerThread[threads];
+
+        for (int i = 0; i < this.threads.length; i++) {
+            this.threads[i] = new WorkerThread(queue);
+            this.threads[i].start();
+        }
+
         this.name = name;
     }
 
     private void input(I i) {
-        exec.submit(() -> {
-            try {
-                consume(i);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        });
+        if (shutdown) {
+            return;
+        }
+
+        try {
+            queue.put(() -> {
+                try {
+                    consume(i);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected abstract void consume(I i);
@@ -52,22 +73,24 @@ public abstract class Task<I, O> {
         consumers.stream().forEach(t -> t.startChain());
     }
 
-    public void shutdown() {
-        exec.shutdown();
+    public void shutdown() throws InterruptedException {
+        this.shutdown = true;
 
-        while (!exec.isTerminated()) {
-            try {
-                exec.awaitTermination(1000, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Could not properly shutdown task: " + toString());
-            }
+        for (int i = 0; i < threads.length; i++) {
+            queue.put(new FinishedRunnable());
+        }
+
+        for (Thread t : threads) {
+            t.join();
         }
 
         for (Task t : consumers) {
             t.shutdown();
         }
+    }
 
-        this.shutdown = true;
+    public int getQueueSize() {
+        return queue.size();
     }
 
     public String toString() {

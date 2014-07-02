@@ -140,6 +140,8 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         BasicDBObject obj = (BasicDBObject) repos.findOne(new BasicDBObject("indexed_name", repo));
         obj.put("should_update", false);
 
+        obj.put("scraped_stars", stars.count(new BasicDBObject("name", repo)));
+
         repos.save(obj);
     }
 
@@ -171,7 +173,9 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
             return ret;
         }
 
-        ret = (Integer) repos.findOne(new BasicDBObject("indexed_name", repo)).get("r_id");
+        BasicDBObject repoObj = (BasicDBObject) repos.findOne(new BasicDBObject("indexed_name", repo));
+
+        ret = repoObj.getInt("r_id");
         repoIds.put(repo, ret);
 
         return ret;
