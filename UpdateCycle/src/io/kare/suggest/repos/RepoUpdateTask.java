@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import io.kare.suggest.Logger;
 import io.kare.suggest.fetch.Fetcher;
 import io.kare.suggest.tasks.Producer;
@@ -20,22 +21,24 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
     private final Map<Integer, Integer> lookupTable = new HashMap<>();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final DBCollection repos, meta;
+    private final DBCollection repos;
     private final Fetcher fetcher;
+    private final int threshold;
     private final int id;
 
     private final int UPPER_BOUND = 100_000;
     private final int LOWER_BOUND = 0;
 
-    public RepoUpdateTask(Fetcher fetcher, DBCollection repos, DBCollection meta) {
+    public RepoUpdateTask(Fetcher fetcher, DBCollection repos) {
         super("Repo Updates");
         this.fetcher = fetcher;
         this.repos = repos;
-        this.meta = meta;
+        this.threshold = Integer.parseInt(System.getProperty("kare.minimum-stars"));
 
-        BasicDBObject idObj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "id"));
+        DBCursor curs = repos.find().sort(new BasicDBObject("r_id", -1));
 
-        this.id = idObj.getInt("value");
+        this.id = ((BasicDBObject) curs.next()).getInt("r_id");
+
     }
 
     public void update() throws IOException {
@@ -67,6 +70,10 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
         int upper = UPPER_BOUND;
         for (int lower : ranges) {
+            if (upper < threshold) {
+                break;
+            }
+
             for (int i = 1; i <= 10; i++) {
                 Logger.info("Grabbing repos from: " + upper + " to " + lower);
 
@@ -82,6 +89,10 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
                     BasicDBObject repo = (BasicDBObject) repos.findOne(
                             new BasicDBObject("indexed_name", node.path("full_name").textValue().toLowerCase())
                     );
+
+                    if (node.path("stargazers_count").intValue() < threshold) {
+                        continue;
+                    }
 
                     boolean newRepo = repo == null;
 
@@ -129,10 +140,6 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
             upper = lower;
         }
-
-        BasicDBObject obj = (BasicDBObject) meta.findOne(new BasicDBObject("role", "redos"));
-        obj.put("value", redos);
-        meta.save(obj);
     }
 
     private int binSearch(int num, Fetcher fetcher) throws IOException {

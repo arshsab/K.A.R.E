@@ -126,6 +126,18 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         }
 
         Logger.info("Finished processing the new tokens for: " + result.repo);
+
+        markRepoCompleted(result.repo);
+    }
+
+    private void markRepoCompleted(String repo) {
+        BasicDBObject obj = (BasicDBObject) repos.findOne(new BasicDBObject("indexed_name", repo));
+        obj.put("scraped_stars", (int) stars.count(new BasicDBObject("name", repo)));
+
+        BasicDBObject progress = (BasicDBObject) obj.get("progress");
+        progress.put("stars_done", true);
+
+        repos.save(obj);
     }
 
     private int computeThreshold(int stars) {

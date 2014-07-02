@@ -37,34 +37,13 @@ public class Kare {
                 .filter(s -> !db.collectionExists(s))
                 .forEach(s -> db.createCollection(s, null));
 
-        DBCollection meta = db.getCollection("meta");
         DBCollection repos = db.getCollection("repos");
         DBCollection stars = db.getCollection("stars");
         DBCollection watchers = db.getCollection("watchers");
         DBCollection scores = db.getCollection("scores");
 
-        String version = System.getProperty("kare.version");
-
-        if (meta.getCount() == 0) {
-            init(db);
-        } else if (find(meta, "role", "version") == null ||
-                !find(meta, "role", "version").getString("value").equals(version)) {
-
-            init(db);
-        } else if (find(meta, "role", "done").getBoolean("value")) {
-            init(db);
-        } else {
-            BasicDBObject obj = find(meta, "role", "crashes");
-
-            int prev = obj.getInt("value");
-
-            obj.put("value", prev + 1);
-
-            meta.save(obj);
-        }
-
-        RepoUpdateTask repoUpdates = new RepoUpdateTask(fetcher, repos, meta);
-        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, meta, new AtomicInteger(), fetcher);
+        RepoUpdateTask repoUpdates = new RepoUpdateTask(fetcher, repos);
+        UpdateTokensTask tokenUpdates = new UpdateTokensTask(db, repos, new AtomicInteger(), fetcher);
         TokenAnalysisTask tokenAnalysis = new TokenAnalysisTask(stars, watchers, repos, scores);
 
         repoUpdates.addConsumer(tokenUpdates);
@@ -72,31 +51,5 @@ public class Kare {
 
         repoUpdates.startChain();
         repoUpdates.shutdown();
-
-        BasicDBObject allDone = find(meta, "role", "done");
-        allDone.put("value", true);
-
-        meta.save(allDone);
-    }
-
-    public void init(DB db) {
-        Logger.important("Resetting DB's update info.");
-
-        db.getCollection("meta").drop();
-        db.createCollection("meta", null);
-
-        DBCollection meta = db.getCollection("meta");
-
-        meta.insert(new BasicDBObject("role", "current_task").append("value", "repo_updates"));
-        meta.insert(new BasicDBObject("role", "redos").append("value", 0));
-        meta.insert(new BasicDBObject("role", "stars_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "correlations_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "done").append("value", false));
-        meta.insert(new BasicDBObject("role", "crashes").append("value", 0));
-        meta.insert(new BasicDBObject("role", "version").append("value", System.getProperty("kare.version")));
-    }
-
-    private BasicDBObject find(DBCollection coll, String what, String value) {
-        return ((BasicDBObject) coll.findOne(new BasicDBObject(what, value)));
     }
 }

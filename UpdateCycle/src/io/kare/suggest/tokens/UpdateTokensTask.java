@@ -27,19 +27,15 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Token[] tokens = { Token.WATCHERS, Token.STARGAZERS };
 
-    private final AtomicInteger atom;
     private final DBCollection repos;
-    private final DBCollection meta;
     private final Fetcher fetcher;
     private final DB db;
 
-    public UpdateTokensTask(DB db, DBCollection repos, DBCollection meta, AtomicInteger atom, Fetcher fetcher) {
+    public UpdateTokensTask(DB db, DBCollection repos, Fetcher fetcher) {
         super(8, "Star Updater");
 
         this.db = db;
         this.repos = repos;
-        this.meta = meta;
-        this.atom = atom;
 
         this.fetcher = fetcher;
     }
@@ -117,19 +113,7 @@ public class UpdateTokensTask extends Task<BasicDBObject, UpdateTokenResult> {
                 }
 
                 tokenResult.put(tokenType, allTokens);
-
-                if (tokenType == Token.STARGAZERS)
-                    obj.put("scraped_stars", (int) tokenCollection.count(new BasicDBObject("name", repo)));
             }
-
-            BasicDBObject progress = (BasicDBObject) obj.get("progress");
-            progress.put("stars_done", true);
-
-            repos.save(obj);
-
-            BasicDBObject metric = (BasicDBObject) meta.findOne(new BasicDBObject("role", "stars_done"));
-            metric.put("value", atom.incrementAndGet());
-            meta.save(obj);
 
             output(new UpdateTokenResult(repo, tokenResult));
         } catch (Throwable t) {
