@@ -35,8 +35,8 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
         this.repos = repos;
         this.threshold = Integer.parseInt(System.getProperty("kare.minimum-stars"));
 
-        repos.ensureIndex(new BasicDBObject("indexed_name", 1));
-        repos.ensureIndex(new BasicDBObject("r_id", 1));
+        repos.ensureIndex(new BasicDBObject("indexed_name", "hashed"));
+        repos.ensureIndex(new BasicDBObject("r_id", "hashed"));
 
         DBCursor curs = repos.find().sort(new BasicDBObject("r_id", -1));
 

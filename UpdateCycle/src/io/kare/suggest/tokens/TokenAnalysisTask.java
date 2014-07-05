@@ -33,11 +33,11 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         this.watchers = watchers;
         this.scores = scores;
 
-        stars.ensureIndex(new BasicDBObject("name", 1));
-        stars.ensureIndex(new BasicDBObject("gazer", 1));
+        stars.ensureIndex(new BasicDBObject("name", "hashed"));
+        stars.ensureIndex(new BasicDBObject("gazer", "hashed"));
 
-        watchers.ensureIndex(new BasicDBObject("name", 1));
-        watchers.ensureIndex(new BasicDBObject("gazer", 1));
+        watchers.ensureIndex(new BasicDBObject("name", "hashed"));
+        watchers.ensureIndex(new BasicDBObject("gazer", "hashed"));
 
         scores.ensureIndex(new BasicDBObject()
             .append("a", 1)

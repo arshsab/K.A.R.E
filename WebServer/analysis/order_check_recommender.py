@@ -1,5 +1,5 @@
 from collections import Counter
-import math
+from math import ceil
 from pymongo import MongoClient
 
 
@@ -23,9 +23,15 @@ class ByOrderRecommender:
 
         cnt = Counter()
 
+        i = 0
         for gazer in db.stars.find({'name': repo_name}):
             for other in db.stars.find({'gazer': gazer['gazer']}):
                 cnt[other['name']] += 1
+
+            if i % 100 == 0:
+                print("Done with %d gazers." % i)
+
+            i += 1
 
         in_order = [(repo, count) for repo, count in cnt.iteritems()]
         in_order.sort(key=lambda tup: tup[1], reverse=True)
@@ -42,12 +48,19 @@ class ByOrderRecommender:
 
         final = []
 
+        my_stars = db.repos.find_one({'indexed_name': repo_name})['gazers']
+        limit = ceil(my_stars ** (1 / float(3)))
+
+        count = 0
         for repo, i in zip(in_order, range(0, len(in_order))):
             stars = repo[1]
             repo = repo[0]
 
             if repo not in self.positions:
                 continue
+
+            if stars > limit:
+                count += 1
 
             numer = self.positions[repo] - i
             denom = None
@@ -60,6 +73,8 @@ class ByOrderRecommender:
             final.append((numer / float(denom), numer, denom, stars, repo))
 
         final.sort(key=lambda tup: tup[0], reverse=True)
+
+        print(count)
 
         return final[1:1000]
 
