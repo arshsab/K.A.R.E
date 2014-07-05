@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class Task<I, O> {
     private final WorkerThread[] threads;
     protected final ArrayBlockingQueue<Runnable> queue;
-    protected final List<Task<O, ?>> consumers = new ArrayList<>();
+    protected final List<Task<O, ?>> consumers = new CopyOnWriteArrayList<>();
     private final String name;
 
     private volatile boolean shutdown = false;
