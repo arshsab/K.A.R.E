@@ -40,7 +40,7 @@ public class RepoUpdateTask extends Producer<BasicDBObject> {
 
         DBCursor curs = repos.find().sort(new BasicDBObject("r_id", -1));
 
-        BasicDBObject first = (BasicDBObject) curs.next();
+        BasicDBObject first = curs.hasNext() ? (BasicDBObject) curs.next() : null;
 
         this.id = first == null ? 0 : first.getInt("r_id");
     }

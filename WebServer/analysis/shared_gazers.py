@@ -1,26 +1,21 @@
 from pymongo import MongoClient
 
+client = MongoClient()
+db = client.kare
 
-def main():
-    client = MongoClient()
+if __name__ == '__main__':
+    repo_A = raw_input("Enter Repo 1: ").lower()
+    repo_B = raw_input("Enter Repo 2: ").lower()
 
-    db = client.kare
+    gazers_A = set()
 
-    repoA = raw_input('First Repo:').lower()
-    repoB = raw_input('Second Repo: ').lower()
-
-    gazers = set()
-
-    for gazer in db.stars.find({'name': repoA}):
-        gazers.add(gazer['gazer'])
+    for star in db.stars.find({'name': repo_A}):
+        gazers_A.add(star['gazer'])
 
     count = 0
 
-    for gazer in db.stars.find({'name': repoB}):
-        if gazer['gazer'] in gazers:
+    for star in db.stars.find({'name': repo_B}):
+        if star['gazer'] in gazers_A:
             count += 1
 
     print(count)
-
-if __name__ == '__main__':
-    main()
