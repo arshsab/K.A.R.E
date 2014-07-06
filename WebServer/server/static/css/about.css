@@ -1,0 +1,16 @@
+body, html, div.container {
+    background-color: #fff;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.results {
+    line-height: 80%;
+    padding-left: 10%;
+}
+
+.statistic {
+    font-family: monospace;
+}
