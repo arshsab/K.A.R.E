@@ -15,9 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AutoCompleter {
     private volatile ArrayList<String> sorted;
     private Map<String, Repo> lookups = new ConcurrentHashMap<>();
+    private final Model model;
 
     public AutoCompleter(Model model) {
-        sorted = new ArrayList<>();
+        this.sorted = new ArrayList<>();
+        this.model = model;
 
         ArrayList<Repo> all = new ArrayList<>();
 
@@ -41,7 +43,7 @@ public class AutoCompleter {
     }
 
     public synchronized void addRepo(ArrayList<Repo> repos) {
-        ArrayList<String> newSorted = new ArrayList<>(repos.size());
+        ArrayList<String> newSorted = new ArrayList<>((int) (model.repos.count() * 2));
 
         Collections.copy(newSorted, sorted);
 
