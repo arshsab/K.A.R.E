@@ -45,7 +45,7 @@ public class AutoCompleter {
     public synchronized void addRepo(ArrayList<Repo> repos) {
         ArrayList<String> newSorted = new ArrayList<>((int) (model.repos.count() * 2));
 
-        Collections.copy(newSorted, sorted);
+        newSorted.addAll(sorted);
 
 
         for (Repo r : repos) {
