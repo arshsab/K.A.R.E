@@ -2,6 +2,7 @@ package model;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import play.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 public class AutoCompleter {
-    private volatile String[] sorted;
+    private volatile ArrayList<String> sorted;
     private Map<String, Repo> lookups = new ConcurrentHashMap<>();
 
     public AutoCompleter(Model model) {
-        sorted = new String[0];
+        sorted = new ArrayList<>();
 
         ArrayList<Repo> all = new ArrayList<>();
 
@@ -25,18 +26,25 @@ public class AutoCompleter {
         }
 
         addRepo(all);
+
+        Logger.info("AutoCompleter is setup...");
     }
 
     public void addRepo(final Repo r) {
+        if (Collections.binarySearch(sorted, r.indexedName) < 0) {
+            return;
+        }
+
         addRepo(new ArrayList<Repo>(){{
             add(r);
         }});
     }
 
     public synchronized void addRepo(ArrayList<Repo> repos) {
-        String[] newSorted = Arrays.copyOf(sorted, sorted.length + repos.size() * 2);
+        ArrayList<String> newSorted = new ArrayList<>(repos.size());
 
-        int index = sorted.length;
+        Collections.copy(newSorted, sorted);
+
 
         for (Repo r : repos) {
             String[] potential = {
@@ -44,7 +52,7 @@ public class AutoCompleter {
                     r.indexedName
             };
 
-            for (int i = 0; i < 2; i++, index++) {
+            for (int i = 0; i < 2; i++) {
                 if (lookups.containsKey(potential[i])
                         && lookups.get(potential[i]).stars > r.stars) {
 
@@ -53,11 +61,11 @@ public class AutoCompleter {
 
                 lookups.put(potential[i], r);
 
-                newSorted[index] = potential[i];
+                newSorted.add(potential[i]);
             }
         }
 
-        Arrays.sort(newSorted);
+        Collections.sort(newSorted);
 
         sorted = newSorted;
     }
@@ -67,9 +75,9 @@ public class AutoCompleter {
     }
 
     public String[] complete(String attempt, int num) {
-        String[] sorted = this.sorted;
+        ArrayList<String> sorted = this.sorted;
 
-        int index = Arrays.binarySearch(sorted, attempt);
+        int index = Collections.binarySearch(sorted, attempt);
 
         index = index < 0 ? -index - 1 : index;
 
@@ -82,8 +90,8 @@ public class AutoCompleter {
             }
         });
 
-        for ( ; index < sorted.length && sorted[index].startsWith(attempt); index++) {
-            Repo r = lookups.get(sorted[index]);
+        for ( ; index < sorted.size() && sorted.get(index).startsWith(attempt); index++) {
+            Repo r = lookups.get(sorted.get(index));
 
             if (sent.contains(r)) {
                 continue;

@@ -3,6 +3,7 @@ package model;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import play.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,8 @@ public class OrderRecommender {
         }
 
         addRepo(all);
+
+        Logger.info("Recommender is setup...");
     }
 
     public void addRepo(final Repo r) {
@@ -50,8 +53,8 @@ public class OrderRecommender {
             }
         }));
 
-        for (int i = 0; i < repos.size(); i++) {
-            newSortedPositions.put(repos.get(i).rId, i);
+        for (int i = 0; i < allRepos.size(); i++) {
+            newSortedPositions.put(allRepos.get(i).rId, i);
         }
 
         sortedPositions = newSortedPositions;

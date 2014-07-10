@@ -1,9 +1,6 @@
 package model;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -43,6 +40,10 @@ public class Model {
             auto = new AutoCompleter(this);
 
             stats = new Statistics(this);
+
+            for (DBObject obj : repos.find()) {
+                updateStores((BasicDBObject) obj);
+            }
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
