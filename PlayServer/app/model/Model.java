@@ -1,6 +1,7 @@
 package model;
 
 import com.mongodb.*;
+import play.Logger;
 
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -41,9 +42,7 @@ public class Model {
 
             stats = new Statistics(this);
 
-            for (DBObject obj : repos.find()) {
-                updateStores((BasicDBObject) obj);
-            }
+            Logger.info("Model is setup...");
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +78,7 @@ public class Model {
     }
 
     public boolean exists(String repo) {
-        return lookup(repo) == -1;
+        return lookup(repo) != -1;
     }
 
     public Repo getRepo(int rId) {
@@ -99,7 +98,5 @@ public class Model {
         backwardRids.put(r.rId, r.indexedName);
 
         repoLookup.put(r.indexedName, r);
-
-        auto.addRepo(r);
     }
 }

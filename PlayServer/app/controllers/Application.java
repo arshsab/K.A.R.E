@@ -56,6 +56,7 @@ public class Application extends Controller {
 
     public static Result recommend(String owner, String repo) {
         repo = owner + '/' + repo;
+        repo = repo.toLowerCase();
 
         if (model.getRepo(repo) == null) {
             return notFound();

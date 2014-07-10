@@ -88,6 +88,9 @@ public class OrderRecommender {
         for (int i = 0; i < canidates.size(); i++) {
             int rId2 = canidates.get(i).getInt("b");
 
+            if (rId == rId2)
+                continue;
+
             int expectedPosition = positions.get(rId2);
 
             int numer = Math.abs(expectedPosition - i);

@@ -21,12 +21,12 @@ public class OutOfDateRepoProducer extends Producer<BasicDBObject> {
 
     @Override
     protected void produce() {
-        for (DBCursor cursor = repos.find(); cursor.hasNext(); ) {
+        for (DBCursor cursor = repos.find(new BasicDBObject("should_update", true)).sort(new BasicDBObject("gazers", -1));
+             cursor.hasNext(); ) {
+
             BasicDBObject repo = (BasicDBObject) cursor.next();
 
-            if (repo.getBoolean("should_update")) {
-                output(repo);
-            }
+            output(repo);
         }
     }
 }

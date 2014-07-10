@@ -32,7 +32,7 @@ public class Main {
             if (obj == null) {
                 runtime.insert(new BasicDBObject());
             } else {
-                Logger.important("Another process is already running. Exiting...");
+                Logger.fatal("Another process is already running. Exiting...");
                 return;
             }
 

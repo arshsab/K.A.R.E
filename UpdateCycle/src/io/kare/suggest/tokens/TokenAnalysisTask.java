@@ -26,7 +26,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
 
     public TokenAnalysisTask(DBCollection stars, DBCollection watchers, DBCollection repos, DBCollection scores) {
         // Size limited so that long lists with stargazers don't build up while the TokenAnalysis is waiting to run.
-        super(1, 16, "Token Analysis");
+        super(2, 16, "Token Analysis");
 
         this.stars = stars;
         this.repos = repos;

@@ -33,7 +33,7 @@ public class AutoCompleter {
     }
 
     public void addRepo(final Repo r) {
-        if (Collections.binarySearch(sorted, r.indexedName) > 0) {
+        if (Collections.binarySearch(sorted, r.indexedName) >= 0) {
             return;
         }
 
