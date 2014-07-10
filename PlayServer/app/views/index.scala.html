@@ -1,0 +1,75 @@
+@(stats: model.Statistics)
+
+@main("KARE") {
+    <div class="container col-xs-10 col-sm-8 col-xs-offset-1 col-sm-offset-2">
+
+        @* HEADER *@
+        <div class="row col-sm-12">
+            <div class="row text-center header">
+                <div class="col-sm-12 banner">KARE</div>
+            </div>
+        </div>
+
+        @* Search Boxes *@
+        <div style=""class="row section">
+            <div class="col-xs-12 col-sm-5 search-panel text-center">
+                <form id="repo-search">
+                    <input id="repo-search-box" type="text" class="form-control" name="search" placeholder="Enter in a repo...">
+                    <input style="visibility: hidden; max-width: 0; width: 0" type="submit" />
+                </form>
+                <p>
+                    <b>Search by Repo:</b> Look up a specific repository* that you are interested in to discover similar
+                    repositories.
+                </p>
+                <small><small>*Repos can share names. Enter in &ltowner&gt/&ltrepo&gt for best results.</small></small>
+            </div>
+            <div class="col-xs-12 col-sm-2 text-center or-sep">
+                <h1>OR</h1>
+            </div>
+            <div class="col-xs-12 col-sm-5 search-panel text-center">
+                <form id="user-search">
+                    <input id="user-search-box" type="text" disabled="disabled" class="form-control" name="search" placeholder="Under Construction...">
+                    <input style="visibility: hidden; max-width: 0; width: 0" type="submit" />
+                </form>
+                <p>
+                    <b>Personalized Recommendations:</b> Enter in your username and we will use the repositories that you
+                    have starred, and watched to find repositories that you might be interested in.
+                </p>
+            </div>
+        </div>
+
+        @* How it works *@
+        <div class="row section">
+            <div class="col-sm-7">
+                <div class="row section-header">
+                    How it works
+                </div>
+                <div class="row">
+                    <p>
+                        Kare takes advantage of Github's starring and watching features to gather data on user interest in
+                        repositories. It analyzes this data to find repositories that are similar. Unfortunately it isn't
+                        able to analyze every repository on Github so instead it has information for the top repos as ranked
+                        by number of stars to ensure that repos we have enough data for are in our database.
+                    </p>
+                </div>
+            </div>
+            <div class="col-sm-offset-1 col-sm-4">
+                <div class="row section-header">
+                    Statistics
+                </div>
+                <div class="row">
+                    <div class="col-xs-4 col-sm-8">
+                        <b>Repos: </b><br>
+                        <b>Stars: </b><br>
+                        <b>Watchers: </b><br>
+                    </div>
+                    <div class="col-xs-4 col-sm-3">
+                        @stats.getRepoSize<br>
+                        @stats.getStarSize<br>
+                        @stats.getWatcherSize<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
