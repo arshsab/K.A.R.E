@@ -33,7 +33,7 @@ public class AutoCompleter {
     }
 
     public void addRepo(final Repo r) {
-        if (Collections.binarySearch(sorted, r.indexedName) < 0) {
+        if (Collections.binarySearch(sorted, r.indexedName) > 0) {
             return;
         }
 
@@ -46,7 +46,6 @@ public class AutoCompleter {
         ArrayList<String> newSorted = new ArrayList<>((int) (model.repos.count() * 2));
 
         newSorted.addAll(sorted);
-
 
         for (Repo r : repos) {
             String[] potential = {
