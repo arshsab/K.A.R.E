@@ -71,25 +71,33 @@ public class Fetcher {
             }
 
             if (resp.responseCode == 403) {
-                if (isSearch) {
-                    searchCanProceed.set(false);
-                } else {
-                    canProceed.set(false);
-                }
+                JsonNode node = mapper.readTree(resp.response);
 
-                while (!(isSearch ? isSearchReady() : isNormalReady())) {
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                if (node.has("block")) {
+                    // Blocked repo (DMCA request etc..), treat as not found.
+
+                    ret = new HttpResponse(404, resp.response);
+                } else {
+                    if (isSearch) {
+                        searchCanProceed.set(false);
+                    } else {
+                        canProceed.set(false);
                     }
 
-                    Logger.debug("Waiting for API rate limit to refresh");
-                }
+                    while (!(isSearch ? isSearchReady() : isNormalReady())) {
+                        try {
+                            Thread.sleep(60000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
 
-                relinquishClaim();
-                claimRelinquished = true;
-                ret = fetch(url);
+                        Logger.debug("Waiting for API rate limit to refresh");
+                    }
+
+                    relinquishClaim();
+                    claimRelinquished = true;
+                    ret = fetch(url);
+                }
             } else if (resp.responseCode >= 500) {
                 error.set(true);
                 Logger.fatal("Received a " + resp.responseCode + " error. Details: " + resp.response);

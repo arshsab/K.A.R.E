@@ -3,13 +3,15 @@ package io.kare.suggest;
 import com.mongodb.*;
 
 import io.kare.suggest.fetch.Fetcher;
-import io.kare.suggest.repos.RepoUpdateAlgorithm;
-import io.kare.suggest.stars.CorrelationsAlgorithm;
-import io.kare.suggest.stars.UpdateStarsAlgorithm;
+import io.kare.suggest.recovery.OutOfDateRepoProducer;
+import io.kare.suggest.repos.RepoUpdateTask;
+import io.kare.suggest.tasks.Chain;
+import io.kare.suggest.tasks.Task;
+import io.kare.suggest.tokens.TokenAnalysisTask;
+import io.kare.suggest.tokens.UpdateTokensTask;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * @author arshsab
@@ -23,10 +25,11 @@ public class Kare {
         this.fetcher = new Fetcher();
     }
 
-    public void update(DB db) throws IOException {
+    public void update(DB db) throws IOException, InterruptedException {
         String[] collections = {
                 "repos",
                 "stars",
+                "watchers",
                 "updates",
                 "scores",
                 "meta"
@@ -36,87 +39,45 @@ public class Kare {
                 .filter(s -> !db.collectionExists(s))
                 .forEach(s -> db.createCollection(s, null));
 
-        DBCollection meta = db.getCollection("meta");
+        DBCollection repos = db.getCollection("repos");
+        DBCollection stars = db.getCollection("stars");
+        DBCollection watchers = db.getCollection("watchers");
+        DBCollection scores = db.getCollection("scores");
 
-        String version = System.getProperty("kare.version");
+        Chain chain;
 
-        if (meta.getCount() == 0) {
-            init(db);
-        } else if (find(meta, "role", "version") == null ||
-                !find(meta, "role", "version").getString("value").equals(version)) {
-
-            init(db);
-        } else if (find(meta, "role", "done").getBoolean("value")) {
-            init(db);
-        } else {
-            BasicDBObject obj = find(meta, "role", "crashes");
-
-            int prev = obj.getInt("value");
-
-            obj.put("value", prev + 1);
-
-            meta.save(obj);
+        switch (System.getProperty("kare.run-type")) {
+            case "update":
+                chain = buildUpdateChain(fetcher, db, repos, stars, watchers, scores);
+                break;
+            case "recovery":
+                chain = buildRecoveryChain(fetcher, db, repos, stars, watchers, scores);
+                break;
+            default:
+                throw new RuntimeException("Invalid run type: " + System.getProperty("kare.run-type"));
         }
 
-        if (find(meta, "role", "current_task").getString("value").equals("repo_updates")) {
-            RepoUpdateAlgorithm.update(fetcher, db.getCollection("repos"), meta);
-
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "star_updates");
-
-            meta.save(task, WriteConcern.JOURNALED);
-        }
-
-        if (find(meta, "role", "current_task").getString("value").equals("star_updates")) {
-            UpdateStarsAlgorithm starAlgo = new UpdateStarsAlgorithm(db.getCollection("stars"),
-                    db.getCollection("repos"),  db.getCollection("meta"), fetcher);
-
-            for (DBObject obj : db.getCollection("repos").find()) {
-                starAlgo.consume((BasicDBObject) obj);
-            }
-
-            starAlgo.completeProcessing();
-
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "correlation_updates");
-
-            meta.save(task, WriteConcern.JOURNALED);
-        }
-
-        if (find(meta, "role", "current_task").getString("value").equals("correlation_updates")) {
-            CorrelationsAlgorithm.correlate(db.getCollection("stars"), db.getCollection("repos"), db.getCollection("scores"), meta);
-
-            BasicDBObject task = find(meta, "role", "current_task");
-            task.put("value", "cleanup");
-
-            meta.save(task, WriteConcern.JOURNALED);
-        }
-
-        BasicDBObject allDone = find(meta, "role", "done");
-        allDone.put("value", true);
-
-        meta.save(allDone);
+        chain.start();
+        chain.shutdown();
     }
 
-    public void init(DB db) {
-        Logger.important("Resetting DB's update info.");
+    private Chain buildUpdateChain(Fetcher fetcher, DB db, DBCollection repos, DBCollection stars,
+                                   DBCollection watchers, DBCollection scores) {
 
-        db.getCollection("meta").drop();
-        db.createCollection("meta", null);
-
-        DBCollection meta = db.getCollection("meta");
-
-        meta.insert(new BasicDBObject("role", "current_task").append("value", "repo_updates"));
-        meta.insert(new BasicDBObject("role", "version").append("value", "1.0"));
-        meta.insert(new BasicDBObject("role", "redos").append("value", 0));
-        meta.insert(new BasicDBObject("role", "stars_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "correlations_done").append("value", 0));
-        meta.insert(new BasicDBObject("role", "done").append("value", false));
-        meta.insert(new BasicDBObject("role", "crashes").append("value", 0));
-        meta.insert(new BasicDBObject("role", "version").append("value", System.getProperty("kare.version")));
+        return new Chain(new Task[] {
+                new RepoUpdateTask(fetcher, repos),
+                new UpdateTokensTask(db, fetcher),
+                new TokenAnalysisTask(stars, watchers, repos, scores)
+        });
     }
 
-    private BasicDBObject find(DBCollection coll, String what, String value) {
-        return ((BasicDBObject) coll.findOne(new BasicDBObject(what, value)));
+    private Chain buildRecoveryChain(Fetcher fetcher, DB db, DBCollection repos, DBCollection stars,
+                                   DBCollection watchers, DBCollection scores) {
+
+        return new Chain(new Task[] {
+                new OutOfDateRepoProducer(repos),
+                new UpdateTokensTask(db, fetcher),
+                new TokenAnalysisTask(stars, watchers, repos, scores)
+        });
     }
 }
