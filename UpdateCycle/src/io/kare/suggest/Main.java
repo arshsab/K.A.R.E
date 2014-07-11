@@ -11,8 +11,6 @@ import java.io.FileInputStream;
 
 public class Main {
     public static void main(String... args) throws InterruptedException {
-        Runnable shutdown = null;
-
         try {
             if (args.length == 0) {
                 Logger.fatal("First parameter must be the name of a properties file with the configuration specs.");
@@ -30,20 +28,23 @@ public class Main {
             BasicDBObject obj = (BasicDBObject) runtime.findOne();
 
             if (obj == null) {
-                runtime.insert(new BasicDBObject());
-            } else {
-                Logger.fatal("Another process is already running. Exiting...");
+                runtime.insert(new BasicDBObject("val", 0).append("max", Integer.parseInt(System.getProperty("kare.parallelism"))));
+            }
+
+            obj = (BasicDBObject) runtime.findAndModify(new BasicDBObject(), new BasicDBObject("$inc", new BasicDBObject("val", 1)));
+
+            int key = obj.getInt("val");
+            int mod = obj.getInt("max");
+
+            if (key >= mod) {
+                Logger.fatal("Too many processes already running...");
                 return;
             }
 
-            shutdown = () -> {
-                Logger.important("Shutting down...");
+            Logger.info("Starting Kare Process #" + key);
 
-                runtime.drop();
-            };
-
-            Runtime.getRuntime().addShutdownHook(new Thread(shutdown));
-
+            System.setProperty("kare.key", Integer.toString(key));
+            System.setProperty("kare.mod", Integer.toString(mod));
 
             Logger.important("Starting Kare. Version #" + System.getProperty("kare.version"));
 
@@ -54,9 +55,6 @@ public class Main {
             Logger.important("Completed an update. Exiting...");
         } catch (Throwable t) {
             t.printStackTrace();
-        } finally {
-            if (shutdown != null)
-                shutdown.run();
         }
     }
 }

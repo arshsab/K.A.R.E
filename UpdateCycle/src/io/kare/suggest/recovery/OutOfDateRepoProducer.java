@@ -17,16 +17,23 @@ public class OutOfDateRepoProducer extends Producer<BasicDBObject> {
         super("Out of Date Repo Producer");
 
         this.repos = repos;
+
+
     }
 
     @Override
     protected void produce() {
+        int key = Integer.parseInt(System.getProperty("kare.key"));
+        int mod = Integer.parseInt(System.getProperty("kare.mod"));
+
         for (DBCursor cursor = repos.find(new BasicDBObject("should_update", true)).sort(new BasicDBObject("gazers", -1));
              cursor.hasNext(); ) {
 
             BasicDBObject repo = (BasicDBObject) cursor.next();
 
-            output(repo);
+            if (repo.getInt("r_id") % mod == key) {
+                output(repo);
+            }
         }
     }
 }
