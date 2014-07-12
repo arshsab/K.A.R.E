@@ -1,4 +1,4 @@
-@(repo: model.Repo, repos: ArrayList[model.Repo])
+@(repo: model.Repo, repos: java.util.ArrayList[model.Repo])
 
 @main("KARE | " + repo.name) {
     <div class="container col-xs-10 col-sm-8 col-xs-offset-1 col-sm-offset-2">
@@ -9,7 +9,7 @@
             </div>
             <div class="col-sm-7 col-md-8 input-header hidden-xs">
                 <form id="repo-search">
-                    <input id="repo-search-box" type="text" class="form-control" name="search" placeholder="Enter in a repo...">
+                    <input id="repo-search-box" type="text" class="form-control" name="search" placeholder="@repo.name: @repo.description">
                 </form>
             </div>
         </div>
@@ -40,8 +40,12 @@
 
                 </div>
                 <div class="readme-feedback">
-                    <i>How was this recommendation: </i> <input type="text"/>
+                    <i>How was this recommendation: </i>
+                    <div id="slider"></div>
+                    <div id="grade-display"></div>
+                    <button id="grade-submit" type="button" class="btn btn-default">Submit</button>
                 </div>
+                <div class="readme-thank-you hide"><i>Thanks for your feedback!</i></div>
             </div>
         </div>
     </div>

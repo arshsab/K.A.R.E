@@ -13,7 +13,8 @@ public class Repo {
                         indexedName,
                         description;
     public final int stars,
-                     rId;
+                     rId,
+                     prominence;
     private final BasicDBObject mongoObject;
 
     public Repo(BasicDBObject mongoObject) {
@@ -24,7 +25,7 @@ public class Repo {
 
         this.stars = mongoObject.getInt("gazers");
         this.rId = mongoObject.getInt("r_id");
-
+        this.prominence = mongoObject.getInt("prominence");
 
         this.mongoObject = mongoObject;
     }

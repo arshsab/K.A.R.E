@@ -1,21 +1,22 @@
 package controllers;
 
-import model.OrderRecommender;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.BasicDBObject;
 import model.Model;
-import model.Statistics;
 import model.Repo;
-
-import play.*;
-import play.mvc.*;
-
-import java.util.*;
-import java.net.UnknownHostException;
-import java.io.IOException;
-
+import play.mvc.Controller;
+import play.mvc.Http;
+import play.mvc.Result;
 import util.StringOutputStream;
-import views.html.*;
+import views.html.index;
+import views.html.results;
 
-import com.fasterxml.jackson.core.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 public class Application extends Controller {
     private static final Model model = new Model();
@@ -54,6 +55,18 @@ public class Application extends Controller {
         }
     }
 
+    private static final Random rand = new Random();
+
+    public static Result random() {
+        int max = (int) model.repos.count();
+
+        int num = rand.nextInt(max);
+
+        String random = model.lookup(num);
+
+        return redirect("/search/" + random);
+    }
+
     public static Result recommend(String owner, String repo) {
         repo = owner + '/' + repo;
         repo = repo.toLowerCase();
@@ -71,5 +84,30 @@ public class Application extends Controller {
         Collections.addAll(ret, repos);
 
         return ret;
+    }
+
+    public static Result feedback() {
+        Http.RequestBody data = request().body();
+
+        try {
+            JsonNode node = data.asJson();
+
+            String a = node.path("a").textValue();
+            String b = node.path("b").textValue();
+            int score = node.path("score").asInt();
+
+            BasicDBObject obj = new BasicDBObject()
+                                    .append("a", a)
+                                    .append("b", b)
+                                    .append("score", score);
+
+            model.feedback.insert(obj);
+
+            return ok();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return badRequest();
+        }
     }
 }

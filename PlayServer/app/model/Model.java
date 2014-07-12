@@ -21,9 +21,10 @@ public class Model {
     public final DBCollection repos,
                               stars,
                               watchers,
+                              feedback,
                               scores;
 
-    public final OrderRecommender reco;
+    public final Recommender reco;
     public final AutoCompleter auto;
     public final Statistics stats;
 
@@ -35,6 +36,7 @@ public class Model {
             repos = db.getCollection("repos");
             stars = db.getCollection("stars");
             watchers = db.getCollection("watchers");
+            feedback = db.getCollection("feedback");
             scores = db.getCollection("scores");
 
             reco = new OrderRecommender(this);

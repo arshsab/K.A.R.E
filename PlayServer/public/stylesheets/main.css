@@ -98,6 +98,14 @@ a:hover {
     height: 72vh;
 }
 
+#slider {
+    width: 30%;
+}
+
+.grade-submit {
+    display: inline;
+}
+
 .section-header {
     font-size: 200%;
     width: 100%;

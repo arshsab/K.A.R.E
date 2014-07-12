@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 07 2014
  */
 
-public class OrderRecommender {
+public class OrderRecommender  implements Recommender {
     private final Model model;
     private final DBCollection repos, scores;
     private ArrayList<Repo> allRepos = new ArrayList<>();
@@ -49,7 +49,7 @@ public class OrderRecommender {
         Collections.sort(allRepos, Collections.reverseOrder(new Comparator<Repo>() {
             @Override
             public int compare(Repo o1, Repo o2) {
-                return o1.stars - o2.stars;
+                return o1.prominence - o2.prominence;
             }
         }));
 
@@ -60,6 +60,7 @@ public class OrderRecommender {
         sortedPositions = newSortedPositions;
     }
 
+    @Override
     public Repo[] recommendationsFor(String repo, int size) {
         int rId = model.lookup(repo);
 

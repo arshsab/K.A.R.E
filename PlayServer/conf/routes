@@ -6,6 +6,8 @@
 GET        /                    controllers.Application.index()
 
 GET        /auto              controllers.Application.auto()
+GET        /random      controllers.Application.random()
+POST        /feedback              controllers.Application.feedback()
 GET        /search/:owner/:repo              controllers.Application.recommend(owner: String, repo: String)
 
 # Map static resources from the /public folder to the /assets URL path
