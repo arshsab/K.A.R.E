@@ -49,7 +49,7 @@ public class OrderRecommender  implements Recommender {
         Collections.sort(allRepos, Collections.reverseOrder(new Comparator<Repo>() {
             @Override
             public int compare(Repo o1, Repo o2) {
-                return o1.prominence - o2.prominence;
+                return o1.stars - o2.stars;
             }
         }));
 
