@@ -1,5 +1,22 @@
 @(repo: model.Repo, repos: java.util.ArrayList[model.Repo])
 
+@displayRepo(repo: model.Repo) = {
+    <div class="result" id="@repo.indexedName">
+        <div class="row">
+            @repo.name: <small>@repo.description</small>
+        </div>
+        <div class="row">
+            <div class="col-xs-7 pull-left">
+                <i class="fa fa-lg fa-angle-left"></i>&nbsp;<i class="fa fa-lg fa-angle-right"></i>&nbsp;@(repo.language)
+            </div>
+            <div class="col-xs-5 pull-right">
+                <i class="fa fa-lg fa-star"></i>&nbsp;@repo.stars
+            </div>
+        </div>
+        <div class="col-xs-2 col-xs-offset-5 bottom-result"></div>
+    </div>
+}
+
 @main("KARE | " + repo.name) {
     <div class="container col-xs-10 col-sm-8 col-xs-offset-1 col-sm-offset-2">
         <div class="row header">
@@ -15,22 +32,14 @@
         </div>
         <div class="row content">
             <div class="col-xs-12 col-sm-5 col-md-4 results kare-panel">
-                @for(r <- repos) {
-                    <div class="result" id="@r.indexedName">
-                        <div class="row">
-                            @r.name: <small>@r.description</small>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-7 pull-left">
-                                <i class="fa fa-lg fa-angle-left"></i>&nbsp;<i class="fa fa-lg fa-angle-right"></i>&nbsp;@r.language
-                            </div>
-                            <div class="col-xs-5 pull-right">
-                                <i class="fa fa-lg fa-star"></i>&nbsp;@r.stars
-                            </div>
-                        </div>
-                        <div class="col-xs-2 col-xs-offset-5 bottom-result"></div>
-                    </div>
-                }
+                <div class="results-for-title">
+                    Results for @repo.name.substring(repo.name.indexOf("/") + 1)
+                </div>
+                <div class="results-container">
+                    @for(r <- repos) {
+                        @displayRepo(r)
+                    }
+                </div>
             </div>
             <div class="col-xs-12 col-sm-7 col-md-8 hidden-xs readme kare-panel">
                 <div class=" text-center readme-title">

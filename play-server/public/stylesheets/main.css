@@ -66,6 +66,11 @@ a:hover {
     word-wrap: break-word;
 }
 
+.results-for-title {
+    font-family: 'Lobster', cursive;
+    font-size: 180%;
+}
+
 @media (min-width: 768px) {
     .result {
         opacity: 0.6;
@@ -94,8 +99,8 @@ a:hover {
 }
 
 .kare-panel {
+     height: 72vh;
     overflow-y: scroll;
-    height: 72vh;
 }
 
 #slider {
@@ -121,6 +126,7 @@ a:hover {
 .readme {
     padding-left: 23px;
     font-size: 140%;
+    overflow-y: scroll;
 }
 
 .hide {
