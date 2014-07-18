@@ -54,11 +54,14 @@ class RatioRecommender:
 
 class EnsembleRecommender:
 
-    def __init__(self, db, recommenders):
+    def __init__(self, db, recommenders=None):
         """
         Creates the Ensemble Recommender which combines several recommendation criteria specified in its parameters,
         in order to provide better recommendations.
         """
+        if recommenders is None:
+            recommenders = [WatchersRecommender(), RatioRecommender(db)]
+
         r_id_map = {}
 
         for repo in db.repos.find():
