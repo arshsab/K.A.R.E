@@ -41,9 +41,9 @@ class OrderRecommender:
                 numer = (i - self.positions[b_id])
                 denom = (db.repos.count() - self.positions[b_id])
 
-                final[b_id] = numer / denom
+                final[b_id] = -numer / denom
             else:
-                numer = i
+                numer = self.positions[b_id] - i
                 denom = max(1, self.positions[b_id])
 
                 final[b_id] = numer / denom
@@ -88,10 +88,6 @@ class SVRRecommender:
             for feedback in db.feedback.find({'a': repo['indexed_name']}):
                 b_id = db.repos.find_one({'indexed_name': feedback['b']})['r_id']
 
-                if star_recs[b_id] > .5 or watcher_recs[b_id] > .5:
-                    print(feedback)
-                    print("Had: %f %f" % (star_recs[b_id], watcher_recs[b_id]))
-
                 x.append([star_recs[b_id], watcher_recs[b_id]])
                 y.append(feedback['score'])
 
@@ -107,7 +103,7 @@ class SVRRecommender:
         # ax.set_xlabel('X Label')
         # ax.set_ylabel('Y Label')
         # ax.set_zlabel('Z Label')
-        #
+        # 
         # plt.show()
 
         print("Starting the training.")
@@ -115,7 +111,7 @@ class SVRRecommender:
         self.svr.fit(np.array(x), np.array(y))
         self.recommenders = recommenders
 
-        print("Done training the Ensemble.")
+        print("Done training the SVR.")
 
     def get_recommendations(self, search_id):
         """
@@ -152,6 +148,7 @@ if __name__ == '__main__':
         print(recos)
 
         results = [db.repos.find_one({'r_id': tup[1]})['indexed_name'] for tup in recos]
+        print(results)
 
         for result in results:
             score = int(raw_input(result))
