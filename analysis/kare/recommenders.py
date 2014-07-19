@@ -4,8 +4,6 @@ import numpy as np
 from pymongo import MongoClient
 import pymongo
 from sklearn.svm import SVR
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 class OrderRecommender:
     """
