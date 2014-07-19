@@ -1,66 +1,65 @@
 from __future__ import division
 
 import numpy as np
-from sklearn.svm import SVC
+from pymongo import MongoClient
+import pymongo
+from sklearn.svm import SVR
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-
-class WatchersRecommender:
-    """
-    Recommendations done purely by the number of watchers that are shared between two repos.
-    """
-
-    def __init__(self):
-        pass
-
-    def score_recommendation(self, score_obj):
-        return score_obj['w']
-
-
-class RatioRecommender:
+class OrderRecommender:
     """
     Recommendations based on an expectation vs reality where the expectation is the expected number of shared stars and
     the reality is the actual number of shared stars. This returns the ratio between the two.
     """
 
-    def __init__(self, db):
-        all_gazers = set()
+    def __init__(self, db, watchers=False):
+        positions = {}
 
-        for star in db.stars.find():
-            all_gazers.add(star)
+        sorting_criteria = 'scraped_watchers' if watchers else 'scraped_stars'
 
-        self.star_counts = len(all_gazers)
-
-        print("Done loading in the star sample size for the ratio based recommendations.")
-
-        gazers_map = {}
-
-        for repo in db.repos.find():
+        for i, repo in enumerate(db.repos.find().sort([(sorting_criteria, pymongo.DESCENDING)])):
             r_id = repo['r_id']
-            gazers = repo['scraped_stars']
 
-            gazers_map[r_id] = gazers
+            positions[r_id] = i
 
-        self.gazers_map = gazers_map
+        self.positions = positions
+        self.watchers = watchers
+        self.db = db
 
         print("Done loading in the gazers by r_id for the ratio based recommendations.")
 
-    def score_recommendation(self, score_obj):
-        b_id = score_obj['b']
+    def get_recommendations(self, repo_id):
+        db = self.db
+        final = {}
 
-        expected_gazers = self.gazers_map[b_id] / self.star_counts
+        sorting_criteria = 'w' if self.watchers else 's'
+        for i, score in enumerate(db.scores.find({'a': repo_id}).sort([(sorting_criteria, pymongo.DESCENDING)])):
+            b_id = score['b']
 
-        return score_obj['s'] / expected_gazers
+            if i > self.positions[b_id]:
+                numer = (i - self.positions[b_id])
+                denom = (db.repos.count() - self.positions[b_id])
+
+                final[b_id] = numer / denom
+            else:
+                numer = i
+                denom = max(1, self.positions[b_id])
+
+                final[b_id] = numer / denom
+
+        return final
 
 
-class EnsembleRecommender:
+class SVRRecommender:
 
-    def __init__(self, db, recommenders=None):
+    def __init__(self, db):
         """
         Creates the Ensemble Recommender which combines several recommendation criteria specified in its parameters,
         in order to provide better recommendations.
         """
-        if recommenders is None:
-            recommenders = [WatchersRecommender(), RatioRecommender(db)]
+
+        recommenders = [OrderRecommender(db), OrderRecommender(db, watchers=True)]
 
         r_id_map = {}
 
@@ -73,43 +72,88 @@ class EnsembleRecommender:
 
         print("Done loading in the gazers by r_id for the ensembled recommendations.")
 
-        self.svc = SVC()
+        self.svr = SVR(kernel='linear')
 
         x = []
         y = []
 
-        for feedback in db.feedback.find():
-            repo_a = db.repos.find_one({'indexed_name': feedback['a']})
-            repo_b = db.repos.find_one({'indexed_name': feedback['b']})
+        for repo in db.repos.find():
+            r_id = repo['r_id']
 
-            score_obj = db.scores.find_one({'a': repo_a['r_id'], 'b': repo_b['r_id']})
+            if not db.feedback.find_one({'a': repo['indexed_name']}): continue
 
-            x.append([reco.score_recommendation(score_obj) for reco in recommenders])
+            star_recs = recommenders[0].get_recommendations(r_id)
+            watcher_recs = recommenders[1].get_recommendations(r_id)
 
-            y.append(feedback['score'])
+            for feedback in db.feedback.find({'a': repo['indexed_name']}):
+                b_id = db.repos.find_one({'indexed_name': feedback['b']})['r_id']
 
-        self.svc.fit(np.array(x), np.array(y))
+                if star_recs[b_id] > .5 or watcher_recs[b_id] > .5:
+                    print(feedback)
+                    print("Had: %f %f" % (star_recs[b_id], watcher_recs[b_id]))
+
+                x.append([star_recs[b_id], watcher_recs[b_id]])
+                y.append(feedback['score'])
+
+        # xs = [l[0] for l in x]
+        # ys = [l[1] for l in x]
+        # zs = y[:]
+        #
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
+        #
+        # ax.scatter(xs, ys, zs)
+        #
+        # ax.set_xlabel('X Label')
+        # ax.set_ylabel('Y Label')
+        # ax.set_zlabel('Z Label')
+        #
+        # plt.show()
+
+        print("Starting the training.")
+
+        self.svr.fit(np.array(x), np.array(y))
         self.recommenders = recommenders
 
-    def get_recommendations(self, score_obj):
-        return self.svc.predict([[reco.score_recommendation(score_obj) for reco in self.recommenders]])[0]
+        print("Done training the Ensemble.")
 
+    def get_recommendations(self, search_id):
+        """
+        :param search_id: the r_id for the desired repo.
+        :return: a sorted list of results with tuples formatted as (score, other_repo's r_id)
+        """
 
-def get_recommendations(recommender, db, r_id):
-    """
-    Gives recommendations for a repo given the database, the desired recommender and the repo_name
+        recommenders = self.recommenders
 
-    :param recommender: The desired recommender.
-    :param db: The mongo database
-    :param r_id: The repo's r_id
-    :return: A list of repos sorted from most recommended to least in the form (score, r_id)
-    """
+        star_recs = recommenders[0].get_recommendations(search_id)
+        watcher_recs = recommenders[1].get_recommendations(search_id)
 
-    scores = []
+        final = []
 
-    for score in db.scores.find({'a': r_id}):
-        scores.append((recommender.get_recommendations(score), score['b']))
+        for score in db.scores.find({'a': search_id}):
+            b_id = score['b']
 
-    scores.sort(key=lambda tup: tup[0], reverse=True)
+            final.append((self.svr.predict([star_recs[b_id], watcher_recs[b_id]]), b_id))
 
-    return scores
+        final.sort(key=lambda tup: tup[0], reverse=True)
+
+        return final
+
+if __name__ == '__main__':
+    client = MongoClient()
+    db = client.kare
+    reco = SVRRecommender(db)
+
+    while True:
+        repo = raw_input("Repo?")
+        search_id = db.repos.find_one({'indexed_name': repo})['r_id']
+
+        recos = reco.get_recommendations(search_id)[0:10]
+        print(recos)
+
+        results = [db.repos.find_one({'r_id': tup[1]})['indexed_name'] for tup in recos]
+
+        for result in results:
+            score = int(raw_input(result))
+
+            db.feedback.insert({'a': repo, 'b': result, 'score': score})
