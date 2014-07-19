@@ -89,21 +89,6 @@ class SVRRecommender:
                 x.append([star_recs[b_id], watcher_recs[b_id]])
                 y.append(feedback['score'])
 
-        # xs = [l[0] for l in x]
-        # ys = [l[1] for l in x]
-        # zs = y[:]
-        #
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111, projection='3d')
-        #
-        # ax.scatter(xs, ys, zs)
-        #
-        # ax.set_xlabel('X Label')
-        # ax.set_ylabel('Y Label')
-        # ax.set_zlabel('Z Label')
-        # 
-        # plt.show()
-
         print("Starting the training.")
 
         self.svr.fit(np.array(x), np.array(y))
