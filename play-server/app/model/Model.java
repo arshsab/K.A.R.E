@@ -43,7 +43,7 @@ public class Model {
             // change based on what type of recommender to use
 //            reco = new OrderRecommender(this);
             reco = new CachedRecommender(this);
-            auto = new AutoCompleter(this);;
+            auto = new AutoCompleter(this);
 
             stats = new Statistics(this);
 

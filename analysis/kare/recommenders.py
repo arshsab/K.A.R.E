@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-
 class OrderRecommender:
     """
     Recommendations based on an expectation vs reality where the expectation is the expected number of shared stars and
@@ -60,7 +59,7 @@ class SVRRecommender:
         in order to provide better recommendations.
         """
 
-        recommenders = [OrderRecommender(db), OrderRecommender(db, watchers=True)]
+        recommenders = [OrderRecommender(db), OrderRecommender(db, watchers=True), ]
 
         r_id_map = {}
 
