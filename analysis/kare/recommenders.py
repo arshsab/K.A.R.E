@@ -4,6 +4,9 @@ import numpy as np
 from pymongo import MongoClient
 import pymongo
 from sklearn.svm import SVR
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 class OrderRecommender:
     """
@@ -70,7 +73,7 @@ class SVRRecommender:
 
         print("Done loading in the gazers by r_id for the ensembled recommendations.")
 
-        self.svr = SVR(kernel='linear')
+        self.svr = SVR()
 
         x = []
         y = []
@@ -78,15 +81,15 @@ class SVRRecommender:
         for repo in db.repos.find():
             r_id = repo['r_id']
 
-            if not db.feedback.find_one({'a': repo['indexed_name']}): continue
+            if not db.feedback.find_one({'a': repo['indexed_name']}):
+                continue
 
-            star_recs = recommenders[0].get_recommendations(r_id)
-            watcher_recs = recommenders[1].get_recommendations(r_id)
+            recs = [reco.get_recommendations(r_id) for reco in recommenders]
 
             for feedback in db.feedback.find({'a': repo['indexed_name']}):
                 b_id = db.repos.find_one({'indexed_name': feedback['b']})['r_id']
 
-                x.append([star_recs[b_id], watcher_recs[b_id]])
+                x.append([rec[b_id] for rec in recs])
                 y.append(feedback['score'])
 
         print("Starting the training.")
@@ -104,15 +107,17 @@ class SVRRecommender:
 
         recommenders = self.recommenders
 
-        star_recs = recommenders[0].get_recommendations(search_id)
-        watcher_recs = recommenders[1].get_recommendations(search_id)
+        recs = [reco.get_recommendations(search_id) for reco in recommenders]
 
         final = []
 
         for score in db.scores.find({'a': search_id}):
             b_id = score['b']
 
-            final.append((self.svr.predict([star_recs[b_id], watcher_recs[b_id]]), b_id))
+            if b_id == search_id:
+                continue
+
+            final.append((self.svr.predict([rec[b_id] for rec in recs]), b_id))
 
         final.sort(key=lambda tup: tup[0], reverse=True)
 
@@ -130,10 +135,16 @@ if __name__ == '__main__':
         recos = reco.get_recommendations(search_id)[0:10]
         print(recos)
 
-        results = [db.repos.find_one({'r_id': tup[1]})['indexed_name'] for tup in recos]
+        results = [db.repos.find_one({'r_id': tup[1]}) for tup in recos]
         print(results)
 
-        for result in results:
-            score = int(raw_input(result))
+        grade = raw_input("grade?") in ['y', 'yes']
 
-            db.feedback.insert({'a': repo, 'b': result, 'score': score})
+        if not grade:
+            continue
+
+        for result in results:
+
+            score = int(raw_input("%s: %s | " % (result['name'], result['description'])))
+
+            db.feedback.insert({'a': repo, 'b': result['indexed_name'], 'score': score})
