@@ -1,4 +1,4 @@
-K.A.R.E
-=======
-
+# K.A.R.E
 The Kick-Ass Recommendation Engine
+
+

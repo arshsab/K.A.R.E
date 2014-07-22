@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
+
 class OrderRecommender:
     """
     Recommendations based on an expectation vs reality where the expectation is the expected number of shared stars and
@@ -53,7 +54,6 @@ class OrderRecommender:
 
 
 class SVRRecommender:
-
     def __init__(self, db):
         """
         Creates the Ensemble Recommender which combines several recommendation criteria specified in its parameters,
@@ -122,6 +122,7 @@ class SVRRecommender:
         final.sort(key=lambda tup: tup[0], reverse=True)
 
         return final
+
 
 if __name__ == '__main__':
     client = MongoClient()

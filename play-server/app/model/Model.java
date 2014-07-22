@@ -22,8 +22,8 @@ public class Model {
                               stars,
                               watchers,
                               feedback,
-                              scores;
-
+                              scores,
+                              cachedRecs;
     public final Recommender reco;
     public final AutoCompleter auto;
     public final Statistics stats;
@@ -33,14 +33,17 @@ public class Model {
             client = new MongoClient();
             db = client.getDB("kare");
 
-            repos = db.getCollection("repos");
-            stars = db.getCollection("stars");
-            watchers = db.getCollection("watchers");
-            feedback = db.getCollection("feedback");
-            scores = db.getCollection("scores");
+            repos      = db.getCollection("repos");
+            stars      = db.getCollection("stars");
+            watchers   = db.getCollection("watchers");
+            feedback   = db.getCollection("feedback");
+            scores     = db.getCollection("scores");
+            cachedRecs = db.getCollection("cached_recs");
 
-            reco = new OrderRecommender(this);
-            auto = new AutoCompleter(this);
+            // change based on what type of recommender to use
+//            reco = new OrderRecommender(this);
+            reco = new CachedRecommender(this);
+            auto = new AutoCompleter(this);;
 
             stats = new Statistics(this);
 
