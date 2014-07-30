@@ -33,9 +33,11 @@ def main():
     db = pymongo.MongoClient().kare
     rec = SVRRecommender(db)
     cached_recs = db.cached_recs
-    for repo in db.repos.find():
+    for i, repo in enumerate(db.repos.find()):
         recommendations = id_to_name(rec.get_recommendations(repo['r_id']), db.repos)
         cached_recs.insert({'repo': repo['indexed_name'], 'recs': recommendations})
+
+        print("Done with: %s [%d]" % (repo['name'], i))
 
 
 if __name__ == '__main__':

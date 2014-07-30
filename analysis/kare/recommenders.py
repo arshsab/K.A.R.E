@@ -59,7 +59,7 @@ class SVRRecommender:
         in order to provide better recommendations.
         """
 
-        recommenders = [OrderRecommender(db), OrderRecommender(db, watchers=True), ]
+        recommenders = [OrderRecommender(db), OrderRecommender(db, watchers=True)]
 
         r_id_map = {}
 
