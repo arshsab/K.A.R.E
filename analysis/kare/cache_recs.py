@@ -10,7 +10,7 @@ def id_to_name(recommendations, repos):
     """
     ret = []
     for rec in recommendations:
-        ret.append((rec[0], repos.find({'r_id': rec[1]})['indexed_name']))
+        ret.append((rec[0], repos.find_one({'r_id': rec[1]})['indexed_name']))
     return ret
 
 
