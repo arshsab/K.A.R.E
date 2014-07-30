@@ -34,6 +34,7 @@ def main():
     rec = SVRRecommender(db)
     cached_recs = db.cached_recs
 
+    # Indirection so that we don't have to deal with managing long-lasting cursors.
     repo_objs = [repo for repo in db.repos.find()]
 
     for i, repo in enumerate(repo_objs):

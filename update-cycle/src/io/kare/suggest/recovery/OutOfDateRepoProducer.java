@@ -17,8 +17,6 @@ public class OutOfDateRepoProducer extends Producer<BasicDBObject> {
         super("Out of Date Repo Producer");
 
         this.repos = repos;
-
-
     }
 
     @Override

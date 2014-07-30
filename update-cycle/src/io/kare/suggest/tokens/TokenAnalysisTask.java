@@ -65,6 +65,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
             String gazer = newStars.get(i).getString("gazer");
             myGazers.add(gazer);
 
+            // Check everythng else he has starred.
             for (String otherRepo : starredBy(gazer)) {
                 int aId = idFor(result.repo);
                 int bId = idFor(otherRepo);
@@ -84,27 +85,29 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
                 BasicDBObject forward = (BasicDBObject) scores.findOne(forwardQuery);
                 BasicDBObject backward = (BasicDBObject) scores.findOne(backwardQuery);
 
-
+                // Figure out if it is worth scoring
                 if (forward == null || backward == null) {
                     int sharedStars, sharedWatchers;
 
+                    // We can rely on one of our A > B relationships to figure our B > A.
                     if (backward != null) {
                         sharedStars = backward.getInt("s");
                         sharedWatchers = backward.getInt("w");
                     } else if (forward != null) {
                         sharedStars = forward.getInt("s");
                         sharedWatchers = forward.getInt("w");
+
+                    // We can figure out whether we have already checked if it is worth doing.
                     } else if (starsShared.containsKey(otherRepo)
                             && watchersShared.containsKey(otherRepo)) {
 
                           sharedStars = starsShared.get(otherRepo);
                           sharedWatchers = watchersShared.get(otherRepo);
+
+                    // Worst Case scenario pick it out of the db and brute force.
                     } else {
                         sharedStars = sizeOfUnion(myGazers, gazersFor(otherRepo));
                         sharedWatchers = sizeOfUnion(myWatchers, watchersFor(otherRepo));
-
-                        starsShared.put(otherRepo, sharedStars);
-                        watchersShared.put(otherRepo, sharedWatchers);
                     }
 
                     if (forward == null && sharedStars > computeThreshold(countGazersFor(aId))) {
@@ -120,6 +123,10 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
 
                         scores.insert(backwardQuery);
                     }
+
+                    // Memorize result
+                    starsShared.put(otherRepo, sharedStars + 1);
+                    watchersShared.put(otherRepo, sharedWatchers + 1);
                 }
             }
 
@@ -134,6 +141,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         for (int i = newWatchers.size() - 1; i >= 0; i--) {
             BasicDBObject watcher = newWatchers.get(i);
 
+            // Check everything else watched. We don't put in objects based on watchers. Only on stars.
             for (String otherRepo : watchedBy(watcher.getString("gazer"))) {
                 int aId = idFor(result.repo);
                 int bId = idFor(otherRepo);
