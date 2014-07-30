@@ -96,6 +96,8 @@ class SVRRecommender:
         self.svr.fit(np.array(x), np.array(y))
         self.recommenders = recommenders
 
+        self.db = db
+
         print("Done training the SVR.")
 
     def get_recommendations(self, search_id):
@@ -109,6 +111,8 @@ class SVRRecommender:
         recs = [reco.get_recommendations(search_id) for reco in recommenders]
 
         final = []
+
+        db = self.db
 
         for score in db.scores.find({'a': search_id}):
             b_id = score['b']
