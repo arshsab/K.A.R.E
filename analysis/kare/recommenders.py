@@ -124,7 +124,7 @@ class SVRRecommender:
 
         final.sort(key=lambda tup: tup[0], reverse=True)
 
-        return final
+        return final[:20]
 
 
 if __name__ == '__main__':
