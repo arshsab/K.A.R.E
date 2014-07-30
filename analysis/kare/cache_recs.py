@@ -41,7 +41,12 @@ def main():
             continue
 
         recommendations = id_to_name(rec.get_recommendations(repo['r_id']), db.repos)
+
+        cached_recs.remove({'repo': repo['indexed_name']})
         cached_recs.insert({'repo': repo['indexed_name'], 'recs': recommendations})
+
+        repo['should_cache'] = False
+        db.repos.save(repo)
 
         print("Done with: %s [%d]" % (repo['name'], i))
 
