@@ -126,7 +126,7 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
 
                     // Memorize result
                     starsShared.put(otherRepo, sharedStars + 1);
-                    watchersShared.put(otherRepo, sharedWatchers + 1);
+                    watchersShared.put(otherRepo, sharedWatchers);
                 }
             }
 
@@ -274,3 +274,4 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         return count;
     }
 }
+
