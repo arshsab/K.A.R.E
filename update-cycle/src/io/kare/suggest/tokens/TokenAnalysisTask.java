@@ -7,6 +7,7 @@ import com.mongodb.MongoException;
 import io.kare.suggest.Logger;
 import io.kare.suggest.tasks.Task;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,9 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
         HashSet<String> myWatchers = watchersFor(result.repo);
         List<BasicDBObject> newStars = result.tokens.get(Token.STARGAZERS);
 
+        Map<String, Integer> starsShared = new HashMap<>();
+        Map<String, Integer> watchersShared = new HashMap<>();
+
         // Reverse in case we crash in here.
         for (int i = newStars.size() - 1; i >= 0; i--) {
             String gazer = newStars.get(i).getString("gazer");
@@ -90,9 +94,17 @@ public class TokenAnalysisTask extends Task<UpdateTokenResult, Void> {
                     } else if (forward != null) {
                         sharedStars = forward.getInt("s");
                         sharedWatchers = forward.getInt("w");
+                    } else if (starsShared.containsKey(otherRepo)
+                            && watchersShared.containsKey(otherRepo)) {
+
+                          sharedStars = starsShared.get(otherRepo);
+                          sharedWatchers = watchersShared.get(otherRepo);
                     } else {
                         sharedStars = sizeOfUnion(myGazers, gazersFor(otherRepo));
                         sharedWatchers = sizeOfUnion(myWatchers, watchersFor(otherRepo));
+
+                        starsShared.put(otherRepo, sharedStars);
+                        watchersShared.put(otherRepo, sharedWatchers);
                     }
 
                     if (forward == null && sharedStars > computeThreshold(countGazersFor(aId))) {
