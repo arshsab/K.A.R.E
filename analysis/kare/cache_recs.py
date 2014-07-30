@@ -33,7 +33,13 @@ def main():
     db = pymongo.MongoClient().kare
     rec = SVRRecommender(db)
     cached_recs = db.cached_recs
-    for i, repo in enumerate(db.repos.find()):
+
+    repo_objs = [repo for repo in db.repos.find()]
+
+    for i, repo in enumerate(repo_objs):
+        if not repo['should_cache']:
+            continue
+
         recommendations = id_to_name(rec.get_recommendations(repo['r_id']), db.repos)
         cached_recs.insert({'repo': repo['indexed_name'], 'recs': recommendations})
 
