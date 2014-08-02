@@ -26,7 +26,9 @@ public class CachedRecommender implements Recommender {
         BasicDBList list = (BasicDBList) recs.get("recs");
         Repo[] ret = new Repo[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            String rec = (String) list.get(i);
+            BasicDBList l = (BasicDBList) list.get(i);
+
+            String rec = (String) l.get(1);
 
             ret[i] = model.getRepo(rec);
         }
