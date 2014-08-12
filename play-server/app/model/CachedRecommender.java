@@ -22,6 +22,10 @@ public class CachedRecommender implements Recommender {
     public Repo[] recommendationsFor(String repo, int size) {
         repo = repo.toLowerCase();
 
+        if (!model.exists(repo)) {
+             return new Repo[0];
+        }
+
         BasicDBObject recs = (BasicDBObject) cachedRecs.findOne(new BasicDBObject("repo", repo));
         BasicDBList list = (BasicDBList) recs.get("recs");
         Repo[] ret = new Repo[list.size()];
